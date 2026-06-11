@@ -1,0 +1,969 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>DART Tools — LDL Apheresis</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#070b11; --card:#111a27; --card2:#0f1722;
+  --border:rgba(149,173,205,.14); --border-strong:rgba(122,162,255,.28);
+  --text:#e9f0fa; --muted:#96a7bf;
+  --primary:#61a8ff; --primary2:#3b82f6; --accent:#7ef0d2;
+  --gold:#cfa95f; --warn:#ffcd70; --danger:#ff6f6f;
+  --shadow:0 20px 60px rgba(0,0,0,.35);
+  --nav-bg:rgba(7,11,17,.82); --grid:rgba(255,255,255,.03);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Inter',system-ui,sans-serif;background:radial-gradient(circle at top, rgba(97,168,255,.10), transparent 30%),radial-gradient(circle at 80% 20%, rgba(126,240,210,.08), transparent 24%),linear-gradient(180deg, var(--bg), #05080d 100%);color:var(--text);-webkit-font-smoothing:antialiased;overflow-x:hidden;min-height:100vh}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;background:linear-gradient(var(--grid) 1px, transparent 1px),linear-gradient(90deg, var(--grid) 1px, transparent 1px);background-size:40px 40px;opacity:.45;mask-image:linear-gradient(to bottom, rgba(0,0,0,.35), transparent 80%)}
+a{text-decoration:none;color:inherit}
+.container{width:min(1280px, calc(100% - 28px));margin:0 auto}
+
+nav{position:sticky;top:0;z-index:200;backdrop-filter:blur(18px);background:var(--nav-bg);border-bottom:1px solid var(--border)}
+.nav-inner{min-height:58px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:8px 0}
+.brand{display:flex;align-items:center;gap:12px}
+.brand-mark{width:44px;height:44px;border-radius:13px;display:grid;place-items:center;font-size:20px;font-weight:900;color:#fff;background:linear-gradient(135deg,var(--primary),var(--accent));box-shadow:inset 0 1px 0 rgba(255,255,255,.2),0 10px 28px rgba(59,130,246,.28)}
+.brand-title{font-size:21px;font-weight:900;letter-spacing:-.025em;line-height:1.1}
+.brand-sub{font-size:10.5px;text-transform:uppercase;letter-spacing:.18em;color:var(--muted);font-weight:700}
+.nav-right{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.chip{display:inline-flex;align-items:center;gap:7px;padding:8px 13px;border-radius:999px;border:1px solid var(--border);background:rgba(255,255,255,.02);color:var(--muted);font-size:12px;font-weight:700;transition:all .2s ease}
+.chip-home{background:linear-gradient(135deg,rgba(97,168,255,.14),rgba(126,240,210,.10));border-color:rgba(97,168,255,.3);color:#d8ecff}
+.chip-home:hover{border-color:rgba(97,168,255,.55);color:#fff;transform:translateY(-1px)}
+.chip-why{background:linear-gradient(135deg,rgba(207,169,95,.18),rgba(126,240,210,.10));border-color:rgba(207,169,95,.35);color:#f0dba8}
+.chip-why:hover{border-color:rgba(207,169,95,.6);color:#fff;transform:translateY(-1px)}
+.chip .dot{width:7px;height:7px;border-radius:50%;background:var(--accent);box-shadow:0 0 8px rgba(126,240,210,.6);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(.7);opacity:.5}}
+
+.head-bar{padding:22px 0 14px;display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;border-bottom:1px solid var(--border);margin-bottom:18px}
+.head-kicker{font-size:11px;text-transform:uppercase;letter-spacing:.16em;color:var(--accent);font-weight:800;margin-bottom:6px}
+.head-title{font-size:clamp(22px,3.4vw,32px);line-height:1.05;letter-spacing:-.03em;font-weight:900}
+.head-title .accent{background:linear-gradient(135deg,#eaf3ff 0%,#99c9ff 45%,#7ef0d2 100%);-webkit-background-clip:text;background-clip:text;color:transparent}
+.head-meta{font-size:13px;color:var(--muted);max-width:520px;line-height:1.65;text-align:right}
+
+.grid-wrap{display:grid;grid-template-columns:1.02fr .98fr;gap:18px;padding-bottom:44px}
+.panel{background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));border:1px solid var(--border);border-radius:22px;padding:20px;box-shadow:var(--shadow)}
+.panel-title{font-size:16px;font-weight:900;margin-bottom:4px}
+.panel-sub{font-size:12.5px;color:var(--muted);line-height:1.7;margin-bottom:16px}
+
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.field{display:flex;flex-direction:column;gap:6px;min-width:0}
+.field.full{grid-column:1 / -1}
+.label{font-size:10.5px;font-weight:800;text-transform:uppercase;letter-spacing:.11em;color:var(--muted)}
+
+input,select,button{font:inherit}
+input,select{width:100%;min-height:42px;border-radius:11px;border:1px solid var(--border);background:rgba(255,255,255,.03);color:var(--text);padding:0 12px;outline:none;transition:border-color .2s ease, box-shadow .2s ease}
+input:focus,select:focus{border-color:rgba(97,168,255,.45);box-shadow:0 0 0 3px rgba(97,168,255,.12)}
+input::placeholder{color:#70829a}
+select{appearance:none;-webkit-appearance:none;background-image:linear-gradient(45deg, transparent 50%, var(--muted) 50%),linear-gradient(135deg, var(--muted) 50%, transparent 50%);background-position:calc(100% - 16px) 50%, calc(100% - 11px) 50%;background-size:5px 5px, 5px 5px;background-repeat:no-repeat;padding-right:30px}
+
+.inline-toggle{display:flex;gap:6px;flex-wrap:wrap}
+.toggle-btn{flex:1;min-width:60px;min-height:40px;padding:0 10px;border-radius:10px;border:1px solid var(--border);background:rgba(255,255,255,.03);color:var(--text);font-weight:700;font-size:13px;cursor:pointer;transition:all .2s ease}
+.toggle-btn:hover{border-color:rgba(97,168,255,.34)}
+.toggle-btn.active{background:linear-gradient(135deg,rgba(97,168,255,.22),rgba(126,240,210,.14));border-color:rgba(97,168,255,.45);color:#eaf3ff;box-shadow:inset 0 1px 0 rgba(255,255,255,.08)}
+.sub-grid,.mini-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+
+.note{border:1px solid rgba(126,240,210,.18);background:rgba(126,240,210,.06);color:#d5fff2;border-radius:12px;padding:10px 12px;font-size:12.5px;line-height:1.65}
+.note.warning{border-color:rgba(255,205,112,.20);background:rgba(255,205,112,.08);color:#ffe8b6}
+.note.info{border-color:rgba(97,168,255,.2);background:rgba(97,168,255,.05);color:#cfe2ff}
+.note.danger{border-color:rgba(255,111,111,.30);background:rgba(255,111,111,.08);color:#ffd2d2}
+
+.calc-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:46px;padding:0 20px;border-radius:12px;border:1px solid transparent;font-weight:800;font-size:14px;cursor:pointer;transition:all .22s ease}
+.btn:hover{transform:translateY(-1px)}
+.btn-primary{color:#fff;background:linear-gradient(135deg,var(--primary),var(--primary2));box-shadow:0 10px 26px rgba(59,130,246,.26)}
+.btn-primary:hover{box-shadow:0 14px 32px rgba(59,130,246,.38)}
+.btn-secondary{color:var(--text);background:rgba(255,255,255,.03);border-color:var(--border)}
+.btn-secondary:hover{border-color:rgba(97,168,255,.34)}
+
+.result-stack{display:grid;gap:12px}
+.result-card{border:1px solid var(--border);border-radius:16px;background:linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.015));padding:14px 16px}
+.result-kicker{font-size:10px;text-transform:uppercase;letter-spacing:.13em;color:var(--muted);font-weight:800;margin-bottom:6px}
+.result-value{font-size:clamp(20px,3vw,30px);letter-spacing:-.04em;line-height:1;font-weight:900;color:#f4f8ff;margin-bottom:6px}
+.result-meta{color:var(--muted);font-size:12px;line-height:1.6}
+/* TBV spotlight tile */
+.result-card.tbv-spotlight{
+  border:2px solid rgba(97,168,255,.55);
+  background:linear-gradient(135deg, rgba(97,168,255,.12), rgba(126,240,210,.06));
+  box-shadow:0 14px 38px rgba(97,168,255,.12), inset 0 1px 0 rgba(255,255,255,.08);
+  padding:18px 22px;position:relative;
+}
+.result-card.tbv-spotlight::before{
+  content:"";position:absolute;inset:-2px;border-radius:18px;z-index:-1;
+  background:linear-gradient(135deg, rgba(97,168,255,.30), rgba(126,240,210,.14));
+  opacity:.5;filter:blur(8px);
+}
+.result-card.tbv-spotlight .result-kicker{color:#b9d6ff;letter-spacing:.16em;font-size:11px;margin-bottom:8px}
+.result-card.tbv-spotlight .result-value{
+  font-size:clamp(36px, 5.5vw, 50px);
+  color:#eaf3ff;letter-spacing:-.045em;font-weight:900;
+  margin-bottom:6px;text-shadow:0 2px 12px rgba(97,168,255,.20);
+}
+.result-card.tbv-spotlight .result-value .unit{font-size:.32em;font-weight:800;color:#b9d6ff;margin-left:4px;letter-spacing:0}
+.result-card.tbv-spotlight .result-meta{color:#dbe6f4;font-size:13px}
+/* 3-weight panel */
+.weight-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:6px}
+.weight-card{padding:10px 12px;border-radius:11px;border:1.5px solid var(--border);background:rgba(255,255,255,.025);cursor:pointer;transition:all .22s ease;position:relative}
+.weight-card:hover{border-color:rgba(97,168,255,.45);transform:translateY(-1px)}
+.weight-card.active{border-color:rgba(126,240,210,.55);background:linear-gradient(135deg,rgba(126,240,210,.15),rgba(97,168,255,.08));box-shadow:0 6px 18px rgba(126,240,210,.14), inset 0 1px 0 rgba(255,255,255,.08)}
+.weight-card-label{font-size:9.5px;text-transform:uppercase;letter-spacing:.11em;color:var(--muted);font-weight:800;margin-bottom:4px}
+.weight-card-val{font-size:19px;font-weight:900;color:#fff;letter-spacing:-.02em;line-height:1.1}
+.weight-card-val .unit{font-size:.55em;font-weight:700;color:var(--muted);margin-left:3px}
+.weight-card-formula{font-size:10px;color:var(--muted);margin-top:4px;line-height:1.4}
+@media (max-width:540px){.weight-cards{grid-template-columns:1fr}}
+.math-box{border:1px solid rgba(97,168,255,.18);background:rgba(97,168,255,.05);color:#d8e9ff;border-radius:14px;padding:12px 14px;font-size:12.5px;line-height:1.7}
+.math-box strong{color:#fff}
+.calc-line{padding:6px 0;border-bottom:1px solid rgba(255,255,255,.06)}
+.calc-line:last-child{border-bottom:none}
+.hidden{display:none!important}
+
+.banner{border-radius:14px;padding:12px 14px;font-size:13px;font-weight:700;line-height:1.5;display:flex;gap:10px;align-items:flex-start}
+.banner.danger{border:1px solid rgba(255,111,111,.32);background:rgba(255,111,111,.10);color:#ffd2d2}
+.banner-icon{font-size:18px;line-height:1}
+
+details{margin-top:2px}
+details summary{cursor:pointer;list-style:none;padding:10px 12px;border-radius:11px;border:1px dashed var(--border);background:rgba(255,255,255,.02);font-size:12px;font-weight:700;color:var(--muted);display:flex;align-items:center;justify-content:space-between;transition:all .2s ease}
+details summary:hover{color:var(--text);border-color:rgba(97,168,255,.3)}
+details summary::-webkit-details-marker{display:none}
+details summary::after{content:"+";font-size:16px;color:var(--accent);font-weight:900}
+details[open] summary::after{content:"−"}
+details[open] summary{margin-bottom:10px;border-style:solid}
+
+.foot{padding:18px 0 32px;border-top:1px solid var(--border);color:var(--muted);font-size:11.5px;display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-top:8px}
+
+@media (max-width:980px){.grid-wrap{grid-template-columns:1fr}.head-meta{text-align:left}}
+@media (max-width:540px){.form-grid,.sub-grid,.mini-grid{grid-template-columns:1fr}}
+
+/* ── Index-style additions ───────────────────────────── */
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&display=swap');
+:root{
+  --bg2:#04070c;
+  --gold-bright:#ffd98a;
+  --pink:#ff8fb6;
+  --ease-out:cubic-bezier(.22,1,.36,1);
+  --ease-glide:cubic-bezier(.36,0,.2,1);
+  --nav-bg:rgba(6,10,16,.72);
+}
+body{
+  background:
+    radial-gradient(1100px 520px at 18% -8%, rgba(97,168,255,.13), transparent 60%),
+    radial-gradient(900px 460px at 85% -4%, rgba(126,240,210,.09), transparent 55%),
+    radial-gradient(1200px 800px at 50% 120%, rgba(59,130,246,.06), transparent 60%),
+    linear-gradient(180deg, var(--bg), var(--bg2) 100%);
+}
+::selection{background:rgba(97,168,255,.32);color:#fff}
+#stars{position:fixed;inset:0;z-index:0;pointer-events:none}
+.aurora{position:fixed;border-radius:50%;filter:blur(90px);pointer-events:none;z-index:0;opacity:.5;will-change:transform}
+.aurora.a1{
+  width:560px;height:560px;top:-220px;left:-140px;
+  background:radial-gradient(circle, rgba(97,168,255,.16), transparent 65%);
+  animation:auroraDrift 30s ease-in-out infinite alternate;
+}
+.aurora.a2{
+  width:480px;height:480px;top:-160px;right:-120px;
+  background:radial-gradient(circle, rgba(126,240,210,.12), transparent 65%);
+  animation:auroraDrift 36s ease-in-out -12s infinite alternate-reverse;
+}
+@keyframes auroraDrift{
+  0%{transform:translate(0,0) scale(1)}
+  50%{transform:translate(60px,40px) scale(1.12)}
+  100%{transform:translate(-40px,70px) scale(.96)}
+}
+nav{
+  backdrop-filter:blur(18px) saturate(150%);
+  -webkit-backdrop-filter:blur(18px) saturate(150%);
+  transition:background .35s ease, box-shadow .35s ease;
+}
+nav.scrolled{
+  background:rgba(5,8,13,.88);
+  box-shadow:0 12px 40px rgba(0,0,0,.45), 0 1px 0 rgba(122,162,255,.08) inset;
+}
+.brand-mark{
+  background:linear-gradient(135deg, rgba(97,168,255,.18), rgba(126,240,210,.14)) !important;
+  border:1px solid rgba(97,168,255,.30);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.14), 0 10px 28px rgba(59,130,246,.25);
+  color:transparent !important;
+}
+.brand-mark svg{display:block;width:28px;height:28px}
+.brand-title{font-family:'Space Grotesk','Inter',sans-serif;font-weight:700;letter-spacing:-.02em}
+.chip-menu{background:linear-gradient(135deg,rgba(126,240,210,.16),rgba(97,168,255,.10));border-color:rgba(126,240,210,.32);color:#dffaef}
+.chip-menu:hover{border-color:rgba(126,240,210,.55);color:#fff;transform:translateY(-1px)}
+.head-bar{padding:30px 0 22px;margin-bottom:22px;position:relative;overflow:hidden;min-height:120px}
+.head-title{font-family:'Space Grotesk','Inter',sans-serif;font-weight:700;letter-spacing:-.035em}
+.head-title .accent{
+  background:linear-gradient(120deg,#eaf3ff 0%,#99c9ff 38%,#7ef0d2 72%,#eaf3ff 100%);
+  background-size:220% 100%;
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+  animation:titleSheen 9s ease-in-out infinite;
+}
+@keyframes titleSheen{0%,100%{background-position:0% 0}50%{background-position:100% 0}}
+.head-kicker{display:flex;align-items:center;gap:9px;letter-spacing:.2em}
+.head-kicker::before{
+  content:"";width:22px;height:1.5px;border-radius:2px;
+  background:linear-gradient(90deg,var(--accent),transparent);
+}
+.panel-title{font-family:'Space Grotesk','Inter',sans-serif;font-weight:700;letter-spacing:-.01em}
+.result-value{font-family:'Space Grotesk','Inter',sans-serif;font-weight:700;letter-spacing:-.035em}
+
+/* horizontal comet (replaces curved comet) */
+.flight-stage{position:absolute;inset:0;pointer-events:none;z-index:0;overflow:hidden}
+.hcomet{
+  position:absolute;
+  top:50%;left:-180px;
+  width:6px;height:6px;border-radius:50%;
+  margin-top:-3px;
+  background:radial-gradient(circle, #fff 0%, rgba(126,240,210,.95) 35%, rgba(97,168,255,.4) 65%, transparent 75%);
+  box-shadow:
+    0 0 6px 2px rgba(255,255,255,.9),
+    0 0 14px 4px rgba(126,240,210,.7),
+    0 0 28px 8px rgba(97,168,255,.4),
+    0 0 52px 14px rgba(97,168,255,.18);
+  opacity:0;
+  will-change:transform;
+  animation:hcometFly 3.6s cubic-bezier(.32,0,.62,.97) .35s forwards;
+}
+.hcomet::before{
+  content:'';position:absolute;top:50%;right:100%;
+  width:72px;height:12px;
+  background:linear-gradient(to left, rgba(126,240,210,.42), rgba(97,168,255,.16) 60%, transparent);
+  transform:translateY(-50%);
+  filter:blur(4px);border-radius:99px;
+}
+.hcomet::after{
+  content:'';position:absolute;top:50%;right:100%;
+  width:140px;height:3.5px;
+  background:linear-gradient(to left, rgba(255,255,255,.95) 0%, rgba(126,240,210,.78) 18%, rgba(97,168,255,.48) 50%, rgba(97,168,255,.15) 75%, transparent 100%);
+  transform:translateY(-50%);
+  filter:blur(1.2px);border-radius:99px;
+}
+@keyframes hcometFly{
+  0%{transform:translateX(0);opacity:0}
+  8%{opacity:1}
+  92%{opacity:1}
+  100%{transform:translateX(calc(100vw + 360px));opacity:0}
+}
+.twinkle{
+  position:absolute;left:var(--x);top:var(--y);
+  width:4px;height:4px;border-radius:50%;
+  background:radial-gradient(circle, #fff 0%, rgba(126,240,210,.85) 45%, transparent 70%);
+  filter:drop-shadow(0 0 4px rgba(126,240,210,.85)) drop-shadow(0 0 8px rgba(97,168,255,.4));
+  opacity:0;animation:twink 1.4s ease-out var(--delay) forwards;
+}
+.twinkle.small{width:2.5px;height:2.5px}
+.twinkle.tiny{width:1.5px;height:1.5px;background:radial-gradient(circle, #fff, transparent 60%)}
+@keyframes twink{
+  0%{opacity:0;transform:scale(0) rotate(0)}
+  22%{opacity:1;transform:scale(2.2) rotate(45deg)}
+  42%{opacity:.55;transform:scale(1) rotate(90deg)}
+  100%{opacity:0;transform:scale(.4) rotate(180deg)}
+}
+
+/* sword-glint on result cards + buttons */
+.result-card{position:relative;overflow:hidden}
+.result-card::after{
+  content:"";position:absolute;inset:0;pointer-events:none;border-radius:inherit;
+  background:linear-gradient(115deg,transparent 35%,rgba(255,255,255,.06) 49%,rgba(255,255,255,.14) 50%,rgba(255,255,255,.06) 51%,transparent 65%);
+  background-size:260% 100%;background-position:130% 0;
+  opacity:0;
+  transition:opacity .2s ease, background-position .9s var(--ease-glide);
+  z-index:1;
+}
+.result-card:hover::after{opacity:1;background-position:-25% 0}
+.btn{position:relative;overflow:hidden}
+.btn::after{
+  content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;
+  background:linear-gradient(115deg,transparent 32%,rgba(255,255,255,.42) 50%,transparent 68%);
+  background-size:240% 100%;background-position:135% 0;
+  opacity:0;transition:opacity .2s ease, background-position .85s var(--ease-glide);
+}
+.btn:hover::after{opacity:1;background-position:-35% 0}
+.btn-primary{
+  color:#06121d !important;
+  background:linear-gradient(135deg,var(--primary),var(--accent)) !important;
+  box-shadow:0 12px 28px rgba(59,130,246,.28), 0 0 0 1px rgba(255,255,255,.12) inset !important;
+}
+.btn-primary:hover{box-shadow:0 16px 36px rgba(59,130,246,.4), 0 0 24px rgba(126,240,210,.25), 0 0 0 1px rgba(255,255,255,.16) inset !important;filter:brightness(1.04)}
+.container{position:relative;z-index:1}
+@media (prefers-reduced-motion:reduce){
+  .aurora,.head-title .accent,.hcomet,.twinkle{animation:none!important}
+  .hcomet,.twinkle{opacity:0!important}
+}
+
+</style>
+</head>
+<body>
+
+<canvas id="stars" aria-hidden="true"></canvas>
+<div class="aurora a1" aria-hidden="true"></div>
+<div class="aurora a2" aria-hidden="true"></div>
+
+<nav id="topnav">
+  <div class="container nav-inner">
+    <a class="brand" href="index.html">
+      <div class="brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 28 28" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="14" cy="14" r="12.5" fill="none" stroke="rgba(207,169,95,.85)" stroke-width="1.6"/>
+          <circle cx="14" cy="14" r="8.5" fill="none" stroke="rgba(97,168,255,.8)" stroke-width="1.4"/>
+          <circle cx="14" cy="14" r="4.5" fill="none" stroke="rgba(126,240,210,.9)" stroke-width="1.4"/>
+          <circle cx="14" cy="14" r="1.8" fill="#ffd98a"/>
+        </svg>
+      </div>
+      <div>
+        <div class="brand-title">DART Tools</div>
+        <div class="brand-sub">Clinical calculator suite</div>
+      </div>
+    </a>
+    <div class="nav-right">
+      <span class="chip"><span class="dot"></span>LDL Apheresis</span>
+      <a class="chip chip-menu" href="ldl-apheresis.html">← LDL Menu</a>
+      <a class="chip chip-home" href="index.html">⌂ Home</a>
+    </div>
+  </div>
+</nav>
+
+<div class="container">
+
+  <div class="head-bar">
+    <div class="flight-stage" aria-hidden="true">
+      <div class="hcomet"></div>
+      <div class="twinkle"       style="--x:14%;--y:30%;--delay:0.75s"></div>
+      <div class="twinkle small" style="--x:24%;--y:18%;--delay:1.00s"></div>
+      <div class="twinkle"       style="--x:34%;--y:50%;--delay:1.25s"></div>
+      <div class="twinkle tiny"  style="--x:42%;--y:32%;--delay:1.50s"></div>
+      <div class="twinkle small" style="--x:52%;--y:22%;--delay:1.75s"></div>
+      <div class="twinkle"       style="--x:62%;--y:60%;--delay:2.00s"></div>
+      <div class="twinkle tiny"  style="--x:72%;--y:42%;--delay:2.20s"></div>
+      <div class="twinkle small" style="--x:82%;--y:28%;--delay:2.45s"></div>
+      <div class="twinkle tiny"  style="--x:90%;--y:55%;--delay:2.65s"></div>
+    </div>
+    <div style="position:relative;z-index:1">
+      <div class="head-kicker">LDL Apheresis</div>
+      <div class="head-title"><span class="accent">LDL Apheresis Calculator</span></div>
+    </div>
+    <div class="head-meta" style="position:relative;z-index:1">Plasma volume, heparin estimate, ACE-i check, Liposorber priming reference.</div>
+  </div>
+<div class="grid-wrap">
+
+    <section class="panel">
+      <div class="form-grid">
+
+        <div class="field">
+          <label class="label" for="sex">Sex</label>
+          <select id="sex" autofocus>
+            <option value="">Select</option>
+            <option value="male">Male</option>
+            <option value="female">Female</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label class="label" for="hct">Hematocrit (%)</label>
+          <input id="hct" type="number" step="0.1" min="0" placeholder="e.g. 40" />
+        </div>
+
+        <div class="field">
+          <label class="label">Height Unit</label>
+          <div class="inline-toggle">
+            <button class="toggle-btn active" type="button" id="heightMetricBtn">cm</button>
+            <button class="toggle-btn" type="button" id="heightEnglishBtn">ft + in</button>
+          </div>
+        </div>
+
+        <div class="field">
+          <label class="label">Weight Unit</label>
+          <div class="inline-toggle">
+            <button class="toggle-btn active" type="button" id="weightMetricBtn">kg</button>
+            <button class="toggle-btn" type="button" id="weightEnglishBtn">lb</button>
+          </div>
+        </div>
+
+        <div class="field" id="heightCmWrap">
+          <label class="label" for="heightCm">Height (cm)</label>
+          <input id="heightCm" type="number" step="0.1" min="0" placeholder="e.g. 175" />
+        </div>
+        <div class="field hidden" id="heightEnglishWrap">
+          <label class="label">Height (ft + in)</label>
+          <div class="sub-grid">
+            <input id="heightFt" type="number" step="1" min="0" placeholder="ft" />
+            <input id="heightIn" type="number" step="0.1" min="0" placeholder="in" />
+          </div>
+        </div>
+
+        <div class="field" id="weightKgWrap">
+          <label class="label" for="weightKg">Weight (kg)</label>
+          <input id="weightKg" type="number" step="0.1" min="0" placeholder="e.g. 80" />
+        </div>
+        <div class="field hidden" id="weightLbWrap">
+          <label class="label" for="weightLb">Weight (lb)</label>
+          <input id="weightLb" type="number" step="0.1" min="0" placeholder="e.g. 176" />
+        </div>
+
+        <div class="field full">
+          <label class="label">Plasma Volume to Process</label>
+          <div class="inline-toggle" id="pvpToggle">
+            <button class="toggle-btn" type="button" data-pvp="1.0">1.0× PV</button>
+            <button class="toggle-btn active" type="button" data-pvp="1.5">1.5× PV</button>
+            <button class="toggle-btn" type="button" data-pvp="2.0">2.0× PV</button>
+            <button class="toggle-btn" type="button" data-pvp="custom">Custom (mL)</button>
+          </div>
+        </div>
+
+        <div class="field full hidden" id="customPvpWrap">
+          <label class="label" for="customPvp">Custom plasma volume (mL) — typical 3000–4000</label>
+          <input id="customPvp" type="number" step="50" min="0" placeholder="e.g. 3500" />
+        </div>
+
+        <div class="field">
+          <label class="label">Prime Type</label>
+          <div class="inline-toggle" id="primeToggle">
+            <button class="toggle-btn active" type="button" data-prime="regular">Regular</button>
+            <button class="toggle-btn" type="button" data-prime="albumin">Albumin</button>
+          </div>
+        </div>
+
+        <div class="field">
+          <label class="label" for="aceUse">ACE-Inhibitor in last 24 h?</label>
+          <select id="aceUse">
+            <option value="no">No</option>
+            <option value="yes">YES — held / verify with MD</option>
+            <option value="arb">No (on ARB instead)</option>
+          </select>
+        </div>
+
+        <div class="field full">
+          <details>
+            <summary>Optional — Indication / FDA-approved category</summary>
+            <select id="diagnosis">
+              <option value="">Select indication (optional)</option>
+              <option value="hofh">HoFH — Homozygous FH</option>
+              <option value="hefh-cad">HeFH + CAD/PAD, LDL ≥ 100</option>
+              <option value="hefh-ldl300">HeFH, LDL ≥ 300 (no CAD)</option>
+              <option value="lpa-cad">FH + CAD/PAD, LDL ≥ 100, Lp(a) ≥ 60</option>
+              <option value="fsgs">Recurrent FSGS post-transplant (expanded device indication)</option>
+              <option value="other">Other / not listed</option>
+            </select>
+            <div id="diagnosisInfoCard" class="math-box hidden" style="margin-top:10px"></div>
+          </details>
+        </div>
+
+        <div class="field full">
+          <div class="note info"><strong>Estimates only — not an order.</strong> Independent educational tool, no manufacturer affiliation. Verify plasma volume target, anticoagulation plan, and ACE-i status with physician before treatment.</div>
+        </div>
+
+      </div>
+
+      <div class="calc-row">
+        <button class="btn btn-primary" id="calculateBtn" type="button">Calculate</button>
+        <button class="btn btn-secondary" id="resetBtn" type="button">Reset</button>
+      </div>
+    </section>
+
+    <aside class="panel">
+      <div class="panel-title">Results</div>
+      <div class="panel-sub">Estimated TBV (Nadler) → plasma volume → target processed volume. Heparin dose reference: 25 U/kg load + 25 U/kg/hr maintenance per dextran-sulfate column operator manual.</div>
+      <div class="result-stack" id="results">
+        <div class="result-card">
+          <div class="result-kicker">Awaiting inputs</div>
+          <div class="result-value">—</div>
+          <div class="result-meta">Fill the form and press Calculate.</div>
+        </div>
+      </div>
+    </aside>
+
+  </div>
+
+  <!-- Tip Sheet Section -->
+  <section class="panel" style="margin-bottom:18px">
+    <div class="panel-title" style="margin-bottom:6px">LDL Apheresis Column — Setup &amp; Priming Reference</div>
+    <div class="panel-sub" style="margin-bottom:14px">Reference content compiled from publicly available operator documentation and institutional standards. <strong>Independent educational material — not affiliated with, sponsored by, or endorsed by any device manufacturer.</strong> Any product or company names below appear only for clinical context and remain the trademarks of their respective owners.</div>
+    <div class="mini-grid">
+      <details open>
+        <summary>Regular Priming Supplies</summary>
+        <div class="math-box">
+          <div class="calc-line">NS 1000 mL × 3</div>
+          <div class="calc-line">LR with Heparin 1000 mL × 1</div>
+          <div class="calc-line">LR 1000 mL × 3</div>
+          <div class="calc-line">Hypertonic 5% Saline 500 mL × 1 (×2 if processing &gt; 3000 mL)</div>
+        </div>
+      </details>
+      <details>
+        <summary>Albumin Priming Supplies</summary>
+        <div class="math-box">
+          <div class="calc-line">NS 1000 mL × 3</div>
+          <div class="calc-line">LR 1000 mL × 4</div>
+          <div class="calc-line">Heparinized Albumin 500 mL × 2</div>
+          <div class="calc-line">Hypertonic 5% Saline 500 mL × 1</div>
+        </div>
+      </details>
+    </div>
+    <div style="height:10px"></div>
+    <details>
+      <summary>Tubing Setup (5 steps)</summary>
+      <div class="math-box">
+        <div class="calc-line">1. Turn on machine, follow prompts for machine test &amp; tubing setup.</div>
+        <div class="calc-line">2. Connect tubing only as directed.</div>
+        <div class="calc-line">3. Double check: <strong>11 valves, 7 connections, 7 transducers</strong>.</div>
+        <div class="calc-line">4. Connect separator and columns as directed.</div>
+        <div class="calc-line">5. Attach drain bag.</div>
+      </div>
+    </details>
+    <div style="height:10px"></div>
+    <details>
+      <summary>Initial Prime (steps 6–11)</summary>
+      <div class="math-box">
+        <div class="calc-line">6. Connect heparin 20 mL syringe infusion.</div>
+        <div class="calc-line">7. Connect 2 bags of NS 1000 mL (bridged) → FD1 and FD2.</div>
+        <div class="calc-line">8. Connect Hypertonic 5% Saline → FD3.</div>
+        <div class="calc-line">9. Fill chambers — make sure NO AIR in tubing above chamber.</div>
+        <div class="calc-line">10. 1st prime.</div>
+        <div class="calc-line">11. Prime arterial line portion as instructed.</div>
+      </div>
+    </details>
+    <div style="height:10px"></div>
+    <div class="mini-grid">
+      <details>
+        <summary>Regular Prime (after step 11)</summary>
+        <div class="math-box">
+          <div class="calc-line">1. Connect 1 bag of heparinized LR → FD1 and FD2.</div>
+          <div class="calc-line">2. 2nd prime.</div>
+          <div class="calc-line">3. Empty drain bag.</div>
+        </div>
+      </details>
+      <details>
+        <summary>Albumin Prime (after step 11)</summary>
+        <div class="math-box">
+          <div class="calc-line">1. Connect 1 bag of LR 1000 mL → FD1 and FD2.</div>
+          <div class="calc-line">2. 2nd prime.</div>
+          <div class="calc-line">3. Empty drain bag.</div>
+          <div class="calc-line">4. Connect 2 bottles heparinized albumin (1 → FD1, 1 → FD2) — <strong>filter needle for vent</strong>.</div>
+          <div class="calc-line">5. 3rd prime — Albumin.</div>
+        </div>
+      </details>
+    </div>
+    <div style="height:10px"></div>
+    <details>
+      <summary>Treatment Start</summary>
+      <div class="math-box">
+        <div class="calc-line">1. Bridge 2–3 bags of LR 1000 mL together → FD2.</div>
+        <div class="calc-line">2. Program machine: <strong>plasma volume to process</strong> + <strong>heparin flow rate</strong>.</div>
+        <div class="calc-line">3. Confirm clamp <strong>to right of V11 is clamped</strong>.</div>
+        <div class="calc-line">4. Start treatment.</div>
+      </div>
+    </details>
+  </section>
+
+  <div class="foot">
+    <span>DART Tools · LDL Apheresis</span>
+    <span>Estimates only · Not affiliated with any device manufacturer · Verify against institutional protocol</span>
+  </div>
+
+</div>
+
+<script>
+const diagnosisLibrary = {
+  "hofh": {
+    label:"Homozygous Familial Hypercholesterolemia (HoFH)",
+    fda:"FDA-approved (LA-15) for HoFH despite maximal therapy.",
+    target:"Time-averaged LDL-C reduction ≈35% with biweekly apheresis; ≈46% with weekly.",
+    schedule:"Typically every 1–2 weeks lifelong.",
+    nurse:"Verify access durability (often AVF/graft for chronic course), pre-Lp(a)/LDL trends, and statin/PCSK9/lomitapide adherence.",
+    rationale:"Severely impaired LDL-receptor function — pharmacotherapy alone insufficient; mechanical removal is mainstay."
+  },
+  "hefh-cad": {
+    label:"HeFH with established CAD/PAD, LDL ≥ 100 mg/dL",
+    fda:"FDA-approved category — HeFH + CAD/PAD on max tolerated therapy unable to reach goals.",
+    target:"Acute LDL-C reduction ≈ 60–70%; time-averaged ≈ 22–31% depending on cadence.",
+    schedule:"Most centers run every 2 weeks.",
+    nurse:"Confirm secondary-prevention pharmacotherapy maximized; coordinate with cardiology; trend lipid panel after each session and pre-next.",
+    rationale:"Aggressive LDL-C reduction reduces MACE in this high-risk subgroup."
+  },
+  "hefh-ldl300": {
+    label:"HeFH, LDL ≥ 300 mg/dL (no overt CAD)",
+    fda:"FDA-approved when LDL-C remains ≥ 300 mg/dL on max tolerated therapy.",
+    target:"Acute LDL-C reduction ≈ 60–70% per session.",
+    schedule:"Every 1–2 weeks per protocol.",
+    nurse:"Education on long-term cadence and access; reinforce diet/lifestyle adjuncts.",
+    rationale:"Persistent severe hypercholesterolemia despite drug therapy carries premature ASCVD risk."
+  },
+  "lpa-cad": {
+    label:"FH + CAD/PAD, LDL ≥ 100 + Lp(a) ≥ 60 mg/dL",
+    fda:"FDA-approved indication addresses the Lp(a)-driven residual risk.",
+    target:"Lp(a) reduction parallels LDL-C reduction (~60–70% acute).",
+    schedule:"Often weekly or every 2 weeks based on Lp(a) trough.",
+    nurse:"Lp(a) is a significant residual risk marker — verify Lp(a) is being trended pre/post.",
+    rationale:"Lp(a)-elevated patients on PCSK9i may still derive MACE reduction from apheresis."
+  },
+  "fsgs": {
+    label:"Focal Segmental Glomerulosclerosis (recurrent post-transplant) — expanded device indication",
+    fda:"FDA-approved (LA-15) for recurrent FSGS in pediatric and adult kidney-transplant recipients (HDE / expanded indication).",
+    target:"LDL apheresis used to remove circulating permeability factors driving FSGS recurrence.",
+    schedule:"Center-specific induction schedule (often a 12-session course over ~9 weeks), then taper.",
+    nurse:"Pediatric considerations; volume and access; trend proteinuria, albumin, eGFR, and immunosuppression levels.",
+    rationale:"Removal of putative circulating permeability factor improves proteinuria in selected recurrent FSGS."
+  },
+  "other": {
+    label:"Other / not listed",
+    fda:"Verify FDA / payer category before scheduling.",
+    target:"Confirm plasma volume target with physician.",
+    schedule:"Confirm cadence with physician.",
+    nurse:"Document indication, target, cadence, and adjunct medications.",
+    rationale:"Indication not mapped here — verify with current guideline."
+  }
+};
+
+const state = {heightMode:'cm', weightMode:'kg', pvp:1.5, isCustomPvp:false, prime:'regular'};
+const $ = (id) => document.getElementById(id);
+const el = {
+  sex:$('sex'), hct:$('hct'),
+  heightCm:$('heightCm'), heightFt:$('heightFt'), heightIn:$('heightIn'),
+  weightKg:$('weightKg'), weightLb:$('weightLb'),
+  customPvp:$('customPvp'), customPvpWrap:$('customPvpWrap'),
+  aceUse:$('aceUse'), diagnosis:$('diagnosis'), diagnosisInfoCard:$('diagnosisInfoCard'),
+  results:$('results'),
+  calculateBtn:$('calculateBtn'), resetBtn:$('resetBtn'),
+  heightMetricBtn:$('heightMetricBtn'), heightEnglishBtn:$('heightEnglishBtn'),
+  weightMetricBtn:$('weightMetricBtn'), weightEnglishBtn:$('weightEnglishBtn'),
+  heightCmWrap:$('heightCmWrap'), heightEnglishWrap:$('heightEnglishWrap'),
+  weightKgWrap:$('weightKgWrap'), weightLbWrap:$('weightLbWrap'),
+  pvpToggle:$('pvpToggle'), primeToggle:$('primeToggle')
+};
+
+function setActive(buttons, activeButton){ buttons.forEach(b=>b.classList.remove('active')); activeButton.classList.add('active'); }
+function fmt(num, digits=1){ return Number(num).toLocaleString(undefined,{minimumFractionDigits:digits, maximumFractionDigits:digits}); }
+function fmtInt(num){ return Math.round(Number(num)).toLocaleString(); }
+function heightToCm(){ if(state.heightMode==='cm') return parseFloat(el.heightCm.value); const ft=parseFloat(el.heightFt.value||0); const inches=parseFloat(el.heightIn.value||0); return ((ft*12)+inches)*2.54; }
+function weightToKg(){ if(state.weightMode==='kg') return parseFloat(el.weightKg.value); return parseFloat(el.weightLb.value)*0.45359237; }
+function nadlerTBVml(sex, heightCm, weightKg){ const h=heightCm/100; return sex==='male' ? 604 + (367*Math.pow(h,3)) + (32.2*weightKg) : 183 + (356*Math.pow(h,3)) + (33.1*weightKg); }
+function validatePositive(v, n){ if(!Number.isFinite(v) || v<=0) throw new Error(`Please enter a valid ${n}.`); }
+
+function renderDiagnosisInfo(){
+  const key = el.diagnosis.value;
+  if(!key){ el.diagnosisInfoCard.classList.add('hidden'); el.diagnosisInfoCard.innerHTML=''; return; }
+  const d = diagnosisLibrary[key];
+  el.diagnosisInfoCard.classList.remove('hidden');
+  el.diagnosisInfoCard.innerHTML = `
+    <div class="calc-line"><strong>Indication:</strong> ${d.label}</div>
+    <div class="calc-line"><strong>FDA / status:</strong> ${d.fda}</div>
+    <div class="calc-line"><strong>Expected effect:</strong> ${d.target}</div>
+    <div class="calc-line"><strong>Schedule:</strong> ${d.schedule}</div>
+    <div class="calc-line"><strong>Nurse focus:</strong> ${d.nurse}</div>
+  `;
+}
+
+function createResultHTML(d){
+  // ACE-i banner
+  let aceBanner = '';
+  if(d.aceUse === 'yes'){
+    aceBanner = `<div class="banner danger"><span class="banner-icon">⚠</span><div><strong>ACE-INHIBITOR FLAG.</strong> Dextran-sulfate columns (LA-15) generate bradykinin — concomitant ACE-i can cause severe hypotension / anaphylactoid reaction. <strong>Hold ACE-i ≥ 24 h before procedure</strong>; consider switch to ARB. Verify with physician before starting.</div></div>`;
+  } else if(d.aceUse === 'arb'){
+    aceBanner = `<div class="banner" style="border:1px solid rgba(126,240,210,.3);background:rgba(126,240,210,.06);color:#cdfaea"><span class="banner-icon">●</span><div><strong>ARB documented.</strong> ARBs are safe with dextran-sulfate apheresis. Confirm no ACE-i within last 24 h.</div></div>`;
+  }
+
+  // Heparin loading + maintenance per LA-15 IFU (~25 U/kg load, 25 U/kg/hr maintenance)
+  const heparinLoadU = 25 * d.weightKg;
+  const heparinMaintU = 25 * d.weightKg;
+  // Estimated procedure time from plasma volume (assume ~50 mL/min plasma = 3000 mL/hr; total time = pvp / 50 + 30 min setup)
+  const estMinutes = Math.round((d.targetPlasmaMl / 50) + 30);
+  const estHours = estMinutes / 60;
+  const heparinTotalU = heparinLoadU + (heparinMaintU * estHours);
+
+  // Hypertonic saline guidance from priming notes
+  const hypertonicBags = d.targetPlasmaMl > 3000 ? 2 : 1;
+
+  return `
+    ${aceBanner}
+
+    ${d.diagnosis ? `
+    <div class="result-card">
+      <div class="result-kicker">Indication Context</div>
+      <div class="result-value" style="font-size:18px">${d.diagnosis.label}</div>
+      <div class="result-meta">${d.diagnosis.fda}</div>
+    </div>` : ''}
+
+    <div class="result-card tbv-spotlight">
+      <div class="result-kicker">★ Total Blood Volume</div>
+      <div class="result-value">${fmtInt(d.tbvMl)}<span class="unit">mL</span></div>
+      <div class="result-meta">Nadler equation${d.weightBasisLabel ? ` · Weight basis: <strong>${d.weightBasisLabel}</strong>` : ''}</div>
+    </div>
+
+    <div class="result-card">
+      <div class="result-kicker">Plasma Volume (1×)</div>
+      <div class="result-value">${fmtInt(d.plasmaVolumeMl)} <span style="font-size:.48em;font-weight:800;color:var(--muted)">mL</span></div>
+      <div class="result-meta">TBV × (1 − Hct) = ${fmtInt(d.tbvMl)} × ${fmt(1 - d.hctFraction,3)}</div>
+    </div>
+
+    <div class="result-card" style="border-color:rgba(126,240,210,.32);background:linear-gradient(180deg, rgba(126,240,210,.06), rgba(97,168,255,.04));">
+      <div class="result-kicker">Plasma Volume to Process</div>
+      <div class="result-value">${fmtInt(d.targetPlasmaMl)} <span style="font-size:.48em;font-weight:800;color:var(--muted)">mL</span></div>
+      <div class="result-meta">${d.pvpLabel} · LA-15 clinical avg ≈ 3500 mL/session</div>
+    </div>
+
+    <div class="math-box">
+      <div class="calc-line"><strong>Plasma volume formula:</strong> TBV × (1 − Hct) = baseline plasma volume</div>
+      <div class="calc-line">${fmtInt(d.tbvMl)} × ${fmt(1 - d.hctFraction,3)} = <strong>${fmtInt(d.plasmaVolumeMl)} mL</strong></div>
+      <div class="calc-line">Target = ${d.pvpLabel}: <strong>${fmtInt(d.targetPlasmaMl)} mL</strong></div>
+    </div>
+
+    <div class="mini-grid">
+      <div class="result-card">
+        <div class="result-kicker">Heparin Load (25 U/kg)</div>
+        <div class="result-value" style="font-size:22px">${fmtInt(heparinLoadU)} U</div>
+        <div class="result-meta">Pre-procedure bolus</div>
+      </div>
+      <div class="result-card">
+        <div class="result-kicker">Heparin Maintenance</div>
+        <div class="result-value" style="font-size:22px">${fmtInt(heparinMaintU)} U/hr</div>
+        <div class="result-meta">Continuous infusion</div>
+      </div>
+    </div>
+
+    <div class="result-card">
+      <div class="result-kicker">Estimated Time & Total Heparin</div>
+      <div class="math-box">
+        <div class="calc-line">Estimated procedure time: <strong>~${estMinutes} min</strong> (~${fmt(estHours,1)} h, includes ~30 min setup)</div>
+        <div class="calc-line">Total heparin (load + maintenance): <strong>${fmtInt(heparinTotalU)} U</strong></div>
+        <div class="calc-line">Adjust per ACT/PTT during run; confirm institutional protocol.</div>
+      </div>
+    </div>
+
+    <div class="result-card">
+      <div class="result-kicker">Prime & Supplies Selected</div>
+      <div class="math-box">
+        <div class="calc-line"><strong>Prime type:</strong> ${d.prime === 'albumin' ? 'Albumin Prime' : 'Regular Prime'}</div>
+        <div class="calc-line"><strong>Hypertonic 5% Saline:</strong> ${hypertonicBags} bag(s) of 500 mL (rule: ×2 if processing &gt; 3000 mL plasma)</div>
+        <div class="calc-line">See "Setup &amp; Priming Tips" below the calculator for full step-by-step.</div>
+      </div>
+    </div>
+
+    <div class="result-card">
+      <div class="result-kicker">Pre-Procedure Checklist</div>
+      <div class="math-box">
+        <div class="calc-line"><strong>ACE-i status:</strong> Held ≥ 24 h or switched to ARB. ⚠ Concomitant ACE-i is contraindicated.</div>
+        <div class="calc-line"><strong>Labs:</strong> Lipid panel (LDL-C, Lp(a)), CBC, CMP, ionized Ca, PT/PTT/INR, fibrinogen.</div>
+        <div class="calc-line"><strong>Access:</strong> AVF/graft preferred for chronic; large peripheral × 2 acceptable for acute.</div>
+        <div class="calc-line"><strong>Vitals + weight:</strong> Baseline; reassess mid-run and post.</div>
+        <div class="calc-line"><strong>Premedication:</strong> Per institutional protocol — antiemetic and IV calcium PRN for citrate symptoms (note: heparin is the primary anticoagulant for LA-15, not citrate).</div>
+      </div>
+    </div>
+
+    ${d.diagnosis ? `
+    <div class="math-box">
+      <div class="calc-line"><strong>Why LDL apheresis here:</strong> ${d.diagnosis.rationale}</div>
+      <div class="calc-line"><strong>Expected effect:</strong> ${d.diagnosis.target}</div>
+      <div class="calc-line"><strong>Schedule:</strong> ${d.diagnosis.schedule}</div>
+      <div class="calc-line"><strong>Nurse focus:</strong> ${d.diagnosis.nurse}</div>
+    </div>` : ''}
+  `;
+}
+
+function calculate(){
+  try{
+    const sex = el.sex.value;
+    const hctRaw = parseFloat(el.hct.value);
+    const heightCm = heightToCm();
+    const weightKg = weightToKg();
+
+    if(!sex) throw new Error('Please select sex.');
+    validatePositive(hctRaw, 'hematocrit');
+    validatePositive(heightCm, 'height');
+    validatePositive(weightKg, 'weight');
+    if(hctRaw >= 100) throw new Error('Hematocrit must be less than 100.');
+
+    const hctFraction = hctRaw / 100;
+    const tbvMl = nadlerTBVml(sex, heightCm, weightKg);
+    const plasmaVolumeMl = tbvMl * (1 - hctFraction);
+
+    let targetPlasmaMl, pvpLabel;
+    if(state.isCustomPvp){
+      const ct = parseFloat(el.customPvp.value);
+      if(!Number.isFinite(ct) || ct<=0) throw new Error('Please enter a valid custom plasma volume.');
+      targetPlasmaMl = ct;
+      pvpLabel = `Custom: ${fmtInt(ct)} mL`;
+    } else {
+      targetPlasmaMl = plasmaVolumeMl * state.pvp;
+      pvpLabel = `${fmt(state.pvp,1)}× plasma volume`;
+    }
+
+    const data = {
+      tbvMl, plasmaVolumeMl, hctFraction, targetPlasmaMl, pvp: state.pvp, pvpLabel,
+      weightKg, prime: state.prime, aceUse: el.aceUse.value,
+      diagnosis: el.diagnosis.value ? diagnosisLibrary[el.diagnosis.value] : null
+    };
+
+    el.results.innerHTML = createResultHTML(data);
+  } catch(err){
+    el.results.innerHTML = `
+      <div class="result-card">
+        <div class="result-kicker">Input Error</div>
+        <div class="result-value" style="font-size:18px;color:#ffb4b4">Unable to calculate</div>
+        <div class="result-meta">${err.message}</div>
+      </div>`;
+  }
+}
+
+function resetForm(){
+  el.sex.value=''; el.hct.value='';
+  el.heightCm.value=''; el.heightFt.value=''; el.heightIn.value='';
+  el.weightKg.value=''; el.weightLb.value='';
+  el.customPvp.value=''; el.customPvpWrap.classList.add('hidden');
+  el.aceUse.value='no'; el.diagnosis.value='';
+  el.diagnosisInfoCard.classList.add('hidden'); el.diagnosisInfoCard.innerHTML='';
+  state.heightMode='cm'; state.weightMode='kg'; state.pvp=1.5; state.isCustomPvp=false; state.prime='regular';
+  setActive([el.heightMetricBtn, el.heightEnglishBtn], el.heightMetricBtn);
+  setActive([el.weightMetricBtn, el.weightEnglishBtn], el.weightMetricBtn);
+  el.pvpToggle.querySelectorAll('[data-pvp]').forEach(b=>b.classList.toggle('active', b.dataset.pvp==='1.5'));
+  el.primeToggle.querySelectorAll('[data-prime]').forEach(b=>b.classList.toggle('active', b.dataset.prime==='regular'));
+  el.heightCmWrap.classList.remove('hidden'); el.heightEnglishWrap.classList.add('hidden');
+  el.weightKgWrap.classList.remove('hidden'); el.weightLbWrap.classList.add('hidden');
+  el.results.innerHTML = `<div class="result-card"><div class="result-kicker">Awaiting inputs</div><div class="result-value">—</div><div class="result-meta">Fill the form and press Calculate.</div></div>`;
+}
+
+/* ─── live weight-basis panel ─── */
+function syncWeightBasisToggle(){
+  el.weightBasisToggle.querySelectorAll('[data-wb]').forEach(b => {
+    b.classList.toggle('active', b.dataset.wb === state.weightBasis);
+  });
+}
+function updateWeightBasisRationale(){
+  el.weightBasisRationale.innerHTML = WEIGHT_BASIS_RATIONALE[state.weightBasis] || '';
+}
+function updateWeightBasisPanel(){
+  const sex = el.sex.value;
+  let hCm, wKg;
+  try{ hCm = heightToCm(); }catch(e){ hCm = NaN; }
+  try{ wKg = weightToKg(); }catch(e){ wKg = NaN; }
+  if(!sex || !Number.isFinite(hCm) || hCm <= 0 || !Number.isFinite(wKg) || wKg <= 0){
+    el.weightBasisPanel.classList.add('hidden');
+    return;
+  }
+  const hIn = hCm / 2.54;
+  const bmi = wKg / Math.pow(hCm/100, 2);
+  if(bmi < 30){
+    el.weightBasisPanel.classList.add('hidden');
+    state.weightBasis = 'actual';
+    syncWeightBasisToggle();
+    return;
+  }
+  const ibw = devineIBWKg(sex, hIn);
+  const abw = adjustedBWKg(ibw, wKg);
+  el.weightBasisPanel.classList.remove('hidden');
+  el.bmiBanner.innerHTML = `<strong>BMI ${bmi.toFixed(1)} (≥ 30)</strong> — Optia / ASFA practice supports choosing among <strong>Actual</strong>, <strong>IBW</strong>, or <strong>Adjusted BW</strong> for volume calculations. Pick one based on patient circumstance.`;
+  el.weightCards.innerHTML = `
+    <div class="weight-card ${state.weightBasis==='actual'?'active':''}" data-wb="actual">
+      <div class="weight-card-label">Actual</div>
+      <div class="weight-card-val">${wKg.toFixed(1)}<span class="unit">kg</span></div>
+      <div class="weight-card-formula">As entered</div>
+    </div>
+    <div class="weight-card ${state.weightBasis==='ibw'?'active':''}" data-wb="ibw">
+      <div class="weight-card-label">IBW · Devine</div>
+      <div class="weight-card-val">${ibw.toFixed(1)}<span class="unit">kg</span></div>
+      <div class="weight-card-formula">${sex==='male'?'50':'45.5'} + 2.3·(${hIn.toFixed(1)} − 60)</div>
+    </div>
+    <div class="weight-card ${state.weightBasis==='abw'?'active':''}" data-wb="abw">
+      <div class="weight-card-label">Adjusted · 0.4</div>
+      <div class="weight-card-val">${abw.toFixed(1)}<span class="unit">kg</span></div>
+      <div class="weight-card-formula">IBW + 0.4·(Actual − IBW)</div>
+    </div>
+  `;
+  el.weightCards.querySelectorAll('.weight-card').forEach(card => {
+    card.addEventListener('click', () => {
+      state.weightBasis = card.dataset.wb;
+      updateWeightBasisPanel();
+    });
+  });
+  syncWeightBasisToggle();
+  updateWeightBasisRationale();
+}
+
+
+el.heightMetricBtn.addEventListener('click', ()=>{ state.heightMode='cm'; setActive([el.heightMetricBtn, el.heightEnglishBtn], el.heightMetricBtn); el.heightCmWrap.classList.remove('hidden'); el.heightEnglishWrap.classList.add('hidden');  updateWeightBasisPanel(); });
+el.heightEnglishBtn.addEventListener('click', ()=>{ state.heightMode='ftin'; setActive([el.heightMetricBtn, el.heightEnglishBtn], el.heightEnglishBtn); el.heightCmWrap.classList.add('hidden'); el.heightEnglishWrap.classList.remove('hidden'); });
+el.weightMetricBtn.addEventListener('click', ()=>{ state.weightMode='kg'; setActive([el.weightMetricBtn, el.weightEnglishBtn], el.weightMetricBtn); el.weightKgWrap.classList.remove('hidden'); el.weightLbWrap.classList.add('hidden'); });
+el.weightEnglishBtn.addEventListener('click', ()=>{ state.weightMode='lb'; setActive([el.weightMetricBtn, el.weightEnglishBtn], el.weightEnglishBtn); el.weightKgWrap.classList.add('hidden'); el.weightLbWrap.classList.remove('hidden'); });
+
+el.pvpToggle.querySelectorAll('[data-pvp]').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    el.pvpToggle.querySelectorAll('[data-pvp]').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    if(btn.dataset.pvp==='custom'){
+      state.isCustomPvp = true;
+      el.customPvpWrap.classList.remove('hidden');
+      el.customPvp.focus();
+    } else {
+      state.isCustomPvp = false;
+      el.customPvpWrap.classList.add('hidden');
+      state.pvp = parseFloat(btn.dataset.pvp);
+    }
+  });
+});
+
+el.primeToggle.querySelectorAll('[data-prime]').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    el.primeToggle.querySelectorAll('[data-prime]').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    state.prime = btn.dataset.prime;
+  });
+});
+
+el.diagnosis.addEventListener('change', renderDiagnosisInfo);
+el.calculateBtn.addEventListener('click', calculate);
+el.resetBtn.addEventListener('click', resetForm);
+
+document.addEventListener('keydown', (e)=>{ if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); calculate(); } });
+
+/* ── starfield + nav scroll (index-style additions) ── */
+(function(){
+  const RM = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const DPR = Math.min(2, window.devicePixelRatio || 1);
+  const topnav = document.getElementById('topnav');
+  if (topnav){
+    const onScroll = () => topnav.classList.toggle('scrolled', window.scrollY > 8);
+    window.addEventListener('scroll', onScroll, {passive:true}); onScroll();
+  }
+  const cv = document.getElementById('stars');
+  if (!cv) return;
+  const cx = cv.getContext('2d');
+  let W, H, stars = [], rafId = null;
+  function size(){
+    W = cv.width = innerWidth * DPR;
+    H = cv.height = innerHeight * DPR;
+    cv.style.width = innerWidth + 'px';
+    cv.style.height = innerHeight + 'px';
+    const n = Math.min(140, Math.round(innerWidth * innerHeight / 11500));
+    stars = Array.from({length:n}, () => ({
+      x: Math.random() * W, y: Math.random() * H,
+      r: (Math.random() * 1.1 + 0.35) * DPR,
+      tw: Math.random() * Math.PI * 2,
+      ts: 0.004 + Math.random() * 0.012,
+      vx: -(0.02 + Math.random() * 0.05) * DPR,
+      hue: Math.random()
+    }));
+  }
+  function draw(){
+    cx.clearRect(0, 0, W, H);
+    for (const s of stars){
+      s.tw += s.ts;
+      if (!RM){ s.x += s.vx; if (s.x < -4) s.x = W + 4; }
+      const a = 0.25 + 0.55 * (0.5 + 0.5 * Math.sin(s.tw));
+      cx.globalAlpha = a;
+      cx.fillStyle = s.hue > 0.86 ? 'rgba(126,240,210,1)' : (s.hue > 0.72 ? 'rgba(153,201,255,1)' : 'rgba(235,242,252,1)');
+      cx.beginPath(); cx.arc(s.x, s.y, s.r, 0, Math.PI * 2); cx.fill();
+    }
+    cx.globalAlpha = 1;
+    if (!RM) rafId = requestAnimationFrame(draw);
+  }
+  size(); draw();
+  window.addEventListener('resize', () => { size(); if (RM) draw(); });
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden){ cancelAnimationFrame(rafId); }
+    else if (!RM){ rafId = requestAnimationFrame(draw); }
+  });
+})();
+
+</script>
+</body>
+</html>
