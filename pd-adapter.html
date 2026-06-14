@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>DART Tools — PD Adapter · Fresenius → Baxter Sterile Connection</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#060a10; --bg2:#04070c;
+  --border:rgba(149,173,205,.14);
+  --text:#e9f0fa; --muted:#96a7bf;
+  --primary:#61a8ff; --primary2:#3b82f6;
+  --accent:#7ef0d2; --gold:#cfa95f; --gold-bright:#ffd98a;
+  --pink:#ff8fb6; --warn:#ffcd70; --danger:#ff6f6f;
+  --shadow:0 20px 60px rgba(0,0,0,.35);
+  --nav-bg:rgba(6,10,16,.72);
+  --grid:rgba(255,255,255,.028);
+  --ease-out:cubic-bezier(.22,1,.36,1);
+  --ease-glide:cubic-bezier(.36,0,.2,1);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;color-scheme:dark}
+select{color-scheme:dark}
+option{background-color:#1a2030;color:#e9f0fa;font-weight:600}
+::selection{background:rgba(97,168,255,.32);color:#fff}
+body{
+  font-family:'Inter',system-ui,sans-serif;
+  background:
+    radial-gradient(1100px 520px at 18% -8%, rgba(97,168,255,.13), transparent 60%),
+    radial-gradient(900px 460px at 85% -4%, rgba(126,240,210,.09), transparent 55%),
+    radial-gradient(1200px 800px at 50% 120%, rgba(59,130,246,.06), transparent 60%),
+    linear-gradient(180deg, var(--bg), var(--bg2) 100%);
+  color:var(--text);-webkit-font-smoothing:antialiased;
+  overflow-x:hidden;min-height:100vh;
+}
+body::before{
+  content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:
+    linear-gradient(var(--grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+  background-size:44px 44px;opacity:.5;
+  mask-image:linear-gradient(to bottom, rgba(0,0,0,.4), transparent 75%);
+}
+a{text-decoration:none;color:inherit}
+.container{width:min(1200px, calc(100% - 28px));margin:0 auto}
+:focus-visible{outline:2px solid var(--primary);outline-offset:3px;border-radius:6px}
+
+/* ── Page-open reveal cascade ── */
+.reveal{opacity:0;transform:translateY(28px);filter:blur(6px);transition:opacity .9s var(--ease-out), transform .9s var(--ease-out), filter .9s var(--ease-out)}
+.reveal.in{opacity:1;transform:none;filter:none}
+.reveal.delay-1{transition-delay:.08s}
+.reveal.delay-2{transition-delay:.18s}
+.reveal.delay-3{transition-delay:.30s}
+.reveal.delay-4{transition-delay:.45s}
+.reveal.delay-5{transition-delay:.62s}
+.reveal.delay-6{transition-delay:.82s}
+
+/* ── ambient layers ── */
+#stars{position:fixed;inset:0;z-index:0;pointer-events:none}
+.aurora{position:fixed;border-radius:50%;filter:blur(90px);pointer-events:none;z-index:0;opacity:.5;will-change:transform}
+.aurora.a1{
+  width:560px;height:560px;top:-220px;left:-140px;
+  background:radial-gradient(circle, rgba(97,168,255,.16), transparent 65%);
+  animation:auroraDrift 30s ease-in-out infinite alternate;
+}
+.aurora.a2{
+  width:480px;height:480px;top:-160px;right:-120px;
+  background:radial-gradient(circle, rgba(126,240,210,.12), transparent 65%);
+  animation:auroraDrift 36s ease-in-out -12s infinite alternate-reverse;
+}
+@keyframes auroraDrift{
+  0%{transform:translate(0,0) scale(1)}
+  50%{transform:translate(60px,40px) scale(1.12)}
+  100%{transform:translate(-40px,70px) scale(.96)}
+}
+
+/* nav */
+nav{
+  position:sticky;top:0;z-index:200;
+  backdrop-filter:blur(18px) saturate(150%);
+  -webkit-backdrop-filter:blur(18px) saturate(150%);
+  background:var(--nav-bg);
+  border-bottom:1px solid var(--border);
+  transition:background .35s ease, box-shadow .35s ease;
+}
+nav.scrolled{background:rgba(5,8,13,.88);box-shadow:0 12px 40px rgba(0,0,0,.45), 0 1px 0 rgba(122,162,255,.08) inset}
+.nav-inner{min-height:60px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:8px 0}
+.brand{display:flex;align-items:center;gap:12px;transition:opacity .2s ease}
+.brand:hover{opacity:.88}
+.brand-mark{width:44px;height:44px;border-radius:13px;display:grid;place-items:center;flex-shrink:0;background:linear-gradient(135deg, rgba(97,168,255,.18), rgba(126,240,210,.14));border:1px solid rgba(97,168,255,.30);box-shadow:inset 0 1px 0 rgba(255,255,255,.14), 0 10px 28px rgba(59,130,246,.25)}
+.brand-mark svg{display:block;width:28px;height:28px}
+.brand-title{font-family:'Space Grotesk','Inter',sans-serif;font-size:21px;font-weight:700;letter-spacing:-.02em;line-height:1.1}
+.brand-sub{font-size:10.5px;text-transform:uppercase;letter-spacing:.18em;color:var(--muted);font-weight:700}
+.nav-right{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.chip{display:inline-flex;align-items:center;gap:7px;padding:9px 15px;border-radius:999px;border:1px solid var(--border);background:rgba(255,255,255,.02);color:var(--muted);font-size:12px;font-weight:700;transition:border-color .2s ease, color .2s ease, transform .2s var(--ease-out), box-shadow .2s ease}
+.chip:hover{border-color:rgba(97,168,255,.5);color:#fff;transform:translateY(-1px)}
+.chip-home{background:linear-gradient(135deg,rgba(97,168,255,.14),rgba(126,240,210,.10));border-color:rgba(97,168,255,.3);color:#d8ecff}
+.chip-home:hover{border-color:rgba(97,168,255,.55);color:#fff}
+.chip-menu{background:linear-gradient(135deg,rgba(126,240,210,.16),rgba(97,168,255,.10));border-color:rgba(126,240,210,.32);color:#dffaef}
+.chip-menu:hover{border-color:rgba(126,240,210,.55);color:#fff}
+
+/* head-bar */
+.head-bar{
+  padding:36px 0 24px;display:flex;align-items:flex-end;justify-content:space-between;
+  gap:16px;flex-wrap:wrap;border-bottom:1px solid var(--border);margin-bottom:30px;
+  position:relative;overflow:hidden;min-height:140px;
+}
+.head-kicker{font-size:11px;text-transform:uppercase;letter-spacing:.2em;color:var(--accent);font-weight:800;margin-bottom:9px;display:flex;align-items:center;gap:9px}
+.head-kicker::before{content:"";width:22px;height:1.5px;border-radius:2px;background:linear-gradient(90deg,var(--accent),transparent)}
+.head-title{font-family:'Space Grotesk','Inter',sans-serif;font-size:clamp(28px,4.4vw,48px);line-height:1.03;letter-spacing:-.035em;font-weight:700;max-width:820px}
+.head-title .accent{background:linear-gradient(120deg,#eaf3ff 0%,#99c9ff 38%,#7ef0d2 72%,#eaf3ff 100%);background-size:220% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:titleSheen 9s ease-in-out infinite}
+@keyframes titleSheen{0%,100%{background-position:0% 0}50%{background-position:100% 0}}
+.head-meta{font-size:13.5px;color:var(--muted);max-width:380px;line-height:1.7;text-align:right}
+
+/* horizontal comet */
+.flight-stage{position:absolute;inset:0;pointer-events:none;z-index:0;overflow:hidden}
+.hcomet{position:absolute;top:50%;left:-180px;width:6px;height:6px;border-radius:50%;margin-top:-3px;background:radial-gradient(circle, #fff 0%, rgba(126,240,210,.95) 35%, rgba(97,168,255,.4) 65%, transparent 75%);box-shadow:0 0 6px 2px rgba(255,255,255,.9),0 0 14px 4px rgba(126,240,210,.7),0 0 28px 8px rgba(97,168,255,.4),0 0 52px 14px rgba(97,168,255,.18);opacity:0;will-change:transform;animation:hcometFly 3.6s cubic-bezier(.32,0,.62,.97) .35s forwards}
+.hcomet::before{content:'';position:absolute;top:50%;right:100%;width:72px;height:12px;background:linear-gradient(to left, rgba(126,240,210,.42), rgba(97,168,255,.16) 60%, transparent);transform:translateY(-50%);filter:blur(4px);border-radius:99px}
+.hcomet::after{content:'';position:absolute;top:50%;right:100%;width:140px;height:3.5px;background:linear-gradient(to left, rgba(255,255,255,.95) 0%, rgba(126,240,210,.78) 18%, rgba(97,168,255,.48) 50%, rgba(97,168,255,.15) 75%, transparent 100%);transform:translateY(-50%);filter:blur(1.2px);border-radius:99px}
+@keyframes hcometFly{0%{transform:translateX(0);opacity:0}8%{opacity:1}92%{opacity:1}100%{transform:translateX(calc(100vw + 360px));opacity:0}}
+
+/* ── hero / TL;DR card ── */
+.hero-card{
+  margin-bottom:30px;padding:26px 28px;border-radius:22px;
+  border:1px solid rgba(126,240,210,.22);
+  background:linear-gradient(135deg, rgba(126,240,210,.06), rgba(97,168,255,.04));
+  position:relative;overflow:hidden;
+}
+.hero-card::before{content:"";position:absolute;top:-40%;right:-15%;width:280px;height:280px;border-radius:50%;background:radial-gradient(circle, rgba(126,240,210,.15), transparent 65%);pointer-events:none}
+.hero-tldr-label{font-size:10.5px;text-transform:uppercase;letter-spacing:.2em;color:#a5cdff;font-weight:800;margin-bottom:10px}
+.hero-tldr-text{font-family:'Space Grotesk','Inter',sans-serif;font-size:17px;font-weight:500;line-height:1.65;color:#e9f0fa}
+.hero-tldr-text strong{color:#fff;background:linear-gradient(120deg, rgba(126,240,210,.20), rgba(97,168,255,.18));padding:2px 6px;border-radius:5px}
+
+/* ── image stage ── */
+.image-stage{margin:36px 0;display:grid;grid-template-columns:repeat(2,1fr);gap:18px}
+@media (max-width:780px){.image-stage{grid-template-columns:1fr}}
+.photo-card{
+  position:relative;border-radius:22px;overflow:hidden;
+  border:1px solid var(--border);
+  background:linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.012));
+  box-shadow:0 26px 64px rgba(0,0,0,.42), inset 0 1px 0 rgba(255,255,255,.06);
+}
+.photo-card::before{
+  /* corner highlight */
+  content:"";position:absolute;inset:0 auto auto 0;width:100%;height:1px;
+  background:linear-gradient(90deg, rgba(255,255,255,.18), transparent 60%);
+  z-index:3;pointer-events:none;
+}
+.photo-label{
+  position:absolute;top:14px;left:14px;z-index:4;
+  display:inline-flex;align-items:center;gap:8px;
+  padding:7px 13px;border-radius:999px;
+  background:rgba(7,11,17,.65);
+  border:1px solid rgba(126,240,210,.36);
+  color:#dffaef;font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;
+  backdrop-filter:blur(10px);
+}
+.photo-label .num{
+  display:grid;place-items:center;width:22px;height:22px;border-radius:50%;
+  background:linear-gradient(135deg, var(--accent), var(--primary));
+  color:#06121d;font-size:11px;font-weight:900;
+}
+.photo-label.after{border-color:rgba(255,217,138,.4);color:#fff3cf}
+.photo-label.after .num{background:linear-gradient(135deg, var(--gold-bright), var(--gold))}
+.photo-wrap{
+  display:block;aspect-ratio:4/3;overflow:hidden;
+  background:#000;
+  cursor:zoom-in;
+}
+.photo-wrap img{
+  display:block;width:100%;height:100%;object-fit:cover;
+  transform:scale(1.025);
+  transition:transform 6.5s ease-out, filter .6s ease;
+  filter:saturate(1.05);
+  will-change:transform;
+}
+/* gentle ambient breathing zoom when idle */
+.photo-card .photo-wrap img{animation:photoIdle 22s ease-in-out infinite}
+@keyframes photoIdle{
+  0%,100%{transform:scale(1.025) translate(0,0)}
+  50%{transform:scale(1.06) translate(-4px,-2px)}
+}
+.photo-card:hover .photo-wrap img{
+  animation:none;
+  transform:scale(1.16) translate(-4px,-4px);
+  filter:saturate(1.15) brightness(1.04);
+  transition:transform 4.5s cubic-bezier(.22,.86,.32,1.06), filter .8s ease;
+}
+.photo-caption{
+  padding:14px 18px 18px;font-size:13.5px;line-height:1.6;
+  color:#d6e0ee;border-top:1px solid var(--border);
+  background:linear-gradient(180deg, rgba(7,11,17,.0), rgba(7,11,17,.45));
+}
+.photo-caption strong{color:#fff}
+
+/* ── section: technique ── */
+.sec{margin:42px 0;scroll-margin-top:90px}
+.sec-title{font-family:'Space Grotesk','Inter',sans-serif;font-size:clamp(22px,2.9vw,30px);font-weight:700;letter-spacing:-.025em;line-height:1.15;margin-bottom:6px}
+.sec-sub{font-size:13.5px;color:var(--muted);margin-bottom:18px;font-weight:600;letter-spacing:.02em}
+
+.callout{margin:18px 0;padding:18px 22px;border-radius:14px;border-left:4px solid;display:flex;gap:16px;align-items:flex-start}
+.callout-icon{font-size:22px;line-height:1;flex-shrink:0;margin-top:2px}
+.callout-body{flex:1;font-size:14.5px;line-height:1.65;color:#d6e0ee}
+.callout-label{font-size:10.5px;text-transform:uppercase;letter-spacing:.15em;font-weight:800;margin-bottom:6px;display:block}
+.callout-key{background:rgba(126,240,210,.06);border-color:var(--accent)}.callout-key .callout-label{color:#7ef0d2}
+.callout-warn{background:rgba(255,205,112,.07);border-color:var(--warn)}.callout-warn .callout-label{color:#ffcd70}
+.callout-danger{background:rgba(255,111,111,.07);border-color:var(--danger)}.callout-danger .callout-label{color:#ff8a8a}
+.callout-body strong{color:#fff}
+
+/* checklist tiles for attire / room setup */
+.tile-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin:18px 0}
+.tile{
+  padding:16px 16px 14px;border-radius:14px;
+  background:linear-gradient(180deg, rgba(255,255,255,.035), rgba(255,255,255,.01));
+  border:1px solid var(--border);
+  transition:border-color .25s ease, transform .25s var(--ease-out);
+}
+.tile:hover{border-color:rgba(126,240,210,.36);transform:translateY(-2px)}
+.tile-icon{width:38px;height:38px;border-radius:11px;display:grid;place-items:center;font-size:18px;background:linear-gradient(135deg, rgba(126,240,210,.18), rgba(97,168,255,.10));border:1px solid rgba(126,240,210,.28);margin-bottom:10px}
+.tile-name{font-family:'Space Grotesk','Inter',sans-serif;font-size:14.5px;font-weight:700;color:#fff;letter-spacing:-.01em;margin-bottom:4px}
+.tile-detail{font-size:12.5px;color:#cdd6e2;line-height:1.55}
+
+/* step rail (numbered, animated reveal) */
+.step-rail{counter-reset:stepN;list-style:none;padding:0;margin:18px 0;position:relative}
+.step-rail::before{
+  content:"";position:absolute;left:22px;top:14px;bottom:14px;width:2px;
+  background:linear-gradient(180deg, rgba(126,240,210,.6), rgba(97,168,255,.3), rgba(255,143,182,.3));
+  border-radius:2px;
+}
+.step-rail li{
+  counter-increment:stepN;position:relative;padding:14px 14px 14px 60px;
+  background:linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.012));
+  border:1px solid var(--border);border-radius:14px;margin-bottom:12px;
+  font-size:14.5px;line-height:1.65;color:#d6e0ee;
+}
+.step-rail li::before{
+  content:counter(stepN);position:absolute;left:8px;top:50%;transform:translateY(-50%);
+  width:30px;height:30px;border-radius:50%;
+  background:linear-gradient(135deg, var(--accent), var(--primary));
+  color:#06121d;font-family:'Space Grotesk','Inter',sans-serif;font-weight:700;font-size:14px;
+  display:grid;place-items:center;
+  box-shadow:0 0 0 4px rgba(7,11,17,.85), 0 6px 18px rgba(126,240,210,.30);
+}
+.step-rail li strong{color:#fff}
+.step-rail li em{color:#a5cdff;font-style:normal;font-weight:700}
+
+/* foot */
+.foot{padding:22px 0 38px;border-top:1px solid var(--border);color:var(--muted);font-size:11.5px;display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;margin-top:30px}
+
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation-duration:.01ms !important;transition-duration:.01ms !important}
+  .reveal{opacity:1;transform:none;filter:none}
+}
+</style>
+</head>
+<body>
+
+<canvas id="stars" aria-hidden="true"></canvas>
+<div class="aurora a1" aria-hidden="true"></div>
+<div class="aurora a2" aria-hidden="true"></div>
+
+<nav id="topnav">
+  <div class="container nav-inner">
+    <a class="brand" href="index.html">
+      <div class="brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 28 28" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="14" cy="14" r="12.5" fill="none" stroke="rgba(207,169,95,.85)" stroke-width="1.6"/>
+          <circle cx="14" cy="14" r="8.5" fill="none" stroke="rgba(97,168,255,.8)" stroke-width="1.4"/>
+          <circle cx="14" cy="14" r="4.5" fill="none" stroke="rgba(126,240,210,.9)" stroke-width="1.4"/>
+          <circle cx="14" cy="14" r="1.8" fill="#ffd98a"/>
+        </svg>
+      </div>
+      <div>
+        <div class="brand-title">DART Tools</div>
+        <div class="brand-sub">Clinical calculator suite</div>
+      </div>
+    </a>
+    <div class="nav-right">
+      <span class="chip"><span class="dot"></span>PD Adapter</span>
+      <a class="chip chip-menu" href="peritonealdialysis.html">← Peritoneal Dialysis Menu</a>
+      <a class="chip chip-home" href="index.html">⌂ Home</a>
+    </div>
+  </div>
+</nav>
+
+<div class="container" style="position:relative;z-index:1">
+
+  <div class="head-bar">
+    <div class="flight-stage" aria-hidden="true"><div class="hcomet"></div></div>
+    <div class="reveal" style="position:relative;z-index:1">
+      <div class="head-kicker">Sterile Cross-Platform Bridge</div>
+      <div class="head-title"><span class="accent">Fresenius → Baxter Adapter Connection</span></div>
+    </div>
+    <div class="head-meta reveal delay-1" style="position:relative;z-index:1">A small piece of plastic. A short connection. A non-negotiable moment for sterile technique. This is how a Baxter HomeChoice Pro cycler meets a patient who arrived with a Fresenius transfer set — and how you keep peritonitis off the chart.</div>
+  </div>
+
+  <div class="hero-card reveal delay-2">
+    <div class="hero-tldr-label">TL;DR — The hallmark of PD safety is what your hands do in the next 90 seconds</div>
+    <div class="hero-tldr-text">
+      Peritoneal dialysis is unforgiving of cut corners. <strong>Sterile and aseptic technique</strong> are not paperwork — they are the entire safety story. The Fresenius → Baxter adapter exists for one job: bridge a Fresenius transfer set to a Baxter cycler line <em>without</em> breaking that sterile field. The rules don't change because the connector did.
+    </div>
+  </div>
+
+  <!-- ── image stage ── -->
+  <div class="image-stage reveal delay-3" aria-label="Before and after adapter connection">
+    <figure class="photo-card">
+      <div class="photo-label"><span class="num">1</span> Before Connection</div>
+      <div class="photo-wrap"><img src="PD Fresenius to Baxter Adapter/FreseniustoBaxterbeforeconnection.jpg" alt="Three components laid out before connection: Baxter cycler tubing on the left (blue caps), the Fresenius–Baxter adapter in the middle (blue), and the Fresenius transfer set on the right (white clamp)" loading="eager"></div>
+      <figcaption class="photo-caption">
+        <strong>Components staged.</strong> Baxter cycler tubing (left), the Fresenius → Baxter <strong>adapter</strong> (center), and the patient's Fresenius transfer set (right). Caps in place; no luers exposed to room air. <em>Nothing has touched anything yet — and that's the point.</em>
+      </figcaption>
+    </figure>
+
+    <figure class="photo-card">
+      <div class="photo-label after"><span class="num">2</span> After Connection</div>
+      <div class="photo-wrap"><img src="PD Fresenius to Baxter Adapter/FreseniustoBaxterafterconnection.jpg" alt="Adapter connected: Baxter cycler tubing joined to the adapter, then to the Fresenius transfer set — a continuous sterile path from cycler to patient" loading="eager"></div>
+      <figcaption class="photo-caption">
+        <strong>Sterile path closed.</strong> One continuous, sealed luer chain — Baxter cycler → adapter → Fresenius transfer set → patient. No twists, no leaks, no exposed threads. Clamps verified before fluid moves.
+      </figcaption>
+    </figure>
+  </div>
+
+  <!-- ── section: sterile technique foundations ── -->
+  <section class="sec reveal delay-4">
+    <div class="sec-title">Sterile &amp; Aseptic Technique — the entire PD safety story</div>
+    <div class="sec-sub">Why this matters before we touch a single connector</div>
+
+    <p style="font-size:15px;line-height:1.78;color:#d6e0ee;margin-bottom:14px">
+      Peritonitis in PD is overwhelmingly a <strong>touch-contamination</strong> event. It doesn't come from cosmic causes; it comes from a hand on a hub, a mask pulled down to talk, an open door, a sneeze, a phone. The CDC, ISPD (International Society for Peritoneal Dialysis), and Baxter's HomeChoice Pro IFU all agree on the same point: <strong>the technique <em>around</em> the connection matters more than the connection itself.</strong> Set the room and yourself up first; the plastic will cooperate.
+    </p>
+
+    <div class="callout callout-key">
+      <span class="callout-icon">🔑</span>
+      <div class="callout-body">
+        <span class="callout-label">The rule that explains every other rule</span>
+        <strong>Treat every exposed luer like an open IV catheter into the peritoneum.</strong> Because functionally, that's what it is. Once a connection is open, the patient's peritoneal membrane is the next surface the air touches.
+      </div>
+    </div>
+
+    <h3 style="font-family:'Space Grotesk','Inter',sans-serif;font-size:18px;font-weight:700;color:#fff;letter-spacing:-.01em;margin:22px 0 10px">1 · Set the room before you set the field</h3>
+    <div class="tile-grid">
+      <div class="tile"><div class="tile-icon">🚪</div><div class="tile-name">Doors Closed</div><div class="tile-detail">Eliminate cross-traffic and airflow. No "just running in real quick."</div></div>
+      <div class="tile"><div class="tile-icon">🌀</div><div class="tile-name">Fans / AC Off</div><div class="tile-detail">Any directed airflow over the field carries skin flora. Turn it off for the duration of the exchange.</div></div>
+      <div class="tile"><div class="tile-icon">🐾</div><div class="tile-name">Pets Out</div><div class="tile-detail">Dander, hair, dust — all out. Including birds and reptiles per ISPD guidance.</div></div>
+      <div class="tile"><div class="tile-icon">📱</div><div class="tile-name">Phones Away</div><div class="tile-detail">A phone is a fomite. Pocket it once gloves go on — no texting mid-connection.</div></div>
+      <div class="tile"><div class="tile-icon">🧴</div><div class="tile-name">Clean Surface</div><div class="tile-detail">Wipe the work surface with hospital-grade disinfectant. Let it air-dry per IFU contact time.</div></div>
+      <div class="tile"><div class="tile-icon">💡</div><div class="tile-name">Good Lighting</div><div class="tile-detail">If you can't see the threads, you can't verify they're clean. Bright, direct light only.</div></div>
+    </div>
+
+    <h3 style="font-family:'Space Grotesk','Inter',sans-serif;font-size:18px;font-weight:700;color:#fff;letter-spacing:-.01em;margin:22px 0 10px">2 · Then set yourself</h3>
+    <div class="tile-grid">
+      <div class="tile"><div class="tile-icon">😷</div><div class="tile-name">Mask On (Patient + Nurse)</div><div class="tile-detail">Surgical mask, covering nose and mouth, before the cassette is opened. Replace if damp.</div></div>
+      <div class="tile"><div class="tile-icon">💧</div><div class="tile-name">Hand Hygiene — 20 sec</div><div class="tile-detail">Soap-and-water wash, all surfaces, ≥ 20 sec. Dry with clean disposable towel. Turn off faucet with the towel.</div></div>
+      <div class="tile"><div class="tile-icon">🧤</div><div class="tile-name">Clean Gloves</div><div class="tile-detail">Don after hand hygiene — never reuse. Some institutions specify sterile gloves for the actual connection step; follow your local SOP.</div></div>
+      <div class="tile"><div class="tile-icon">👤</div><div class="tile-name">No Talking, No Coughing</div><div class="tile-detail">Once luers are exposed, mouths stay closed. Step away from the field if you must speak or sneeze.</div></div>
+      <div class="tile"><div class="tile-icon">💍</div><div class="tile-name">Bare Below the Elbows</div><div class="tile-detail">Rings (plain band only or removed), watch, bracelets off. Long sleeves rolled or removed.</div></div>
+      <div class="tile"><div class="tile-icon">🪒</div><div class="tile-name">No Smoking, No Eating</div><div class="tile-detail">Not during, not just before. Skin contaminants travel.</div></div>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠</span>
+      <div class="callout-body">
+        <span class="callout-label">If you're sick — call out</span>
+        <strong>An upper respiratory infection, productive cough, or open sore on the hands</strong> means someone else does the connection today. PD nursing is a contact discipline; nobody wins by powering through.
+      </div>
+    </div>
+  </section>
+
+  <!-- ── section: connection procedure ── -->
+  <section class="sec reveal delay-5">
+    <div class="sec-title">The Connection — step by step</div>
+    <div class="sec-sub">Baxter HomeChoice Pro · Fresenius transfer set · adapter bridge</div>
+
+    <p style="font-size:14.5px;line-height:1.75;color:#d6e0ee;margin-bottom:14px">
+      <strong>Read this once cold before doing it warm.</strong> Each step is one motion, one verification. The "boring" details (which way the cap comes off, where you set the cycler tubing while you pick up the adapter) are the steps that protect the patient. Verify every clamp; verify every cap; verify every connection.
+    </p>
+
+    <ol class="step-rail">
+      <li><strong>Verify the order and the prescription.</strong> Confirm patient identity, prescription, dialysate strength, target volumes, dwell time, and number of cycles. Match against the HomeChoice Pro program card. <em>Mismatch caught here is one minute saved. Mismatch caught at fill time is a sentinel event.</em></li>
+
+      <li><strong>Gather and inspect the disposables.</strong> Open the cycler set, the dialysate bags, and the Fresenius–Baxter adapter package. <em>Check expiration dates, lot numbers, package integrity, and clarity of dialysate</em> (no particulate, no haziness, no color change). Reject anything that looks off — document and replace.</li>
+
+      <li><strong>Stage components without touching luers.</strong> Place the cycler tubing, the adapter (still capped), and the patient's transfer set (still capped, still clamped) on the clean field. <em>Keep caps on until you need to remove them.</em> No premature unwrapping.</li>
+
+      <li><strong>Hand hygiene + mask check.</strong> Soap-and-water wash, ≥ 20 seconds, all surfaces. Dry. Confirm both <strong>patient and nurse</strong> masks are on, snug, covering nose and mouth. Patient turns the head away from the field.</li>
+
+      <li><strong>Don clean gloves.</strong> Do not reach below the field, do not touch face, do not adjust hair. Hands stay in the working space.</li>
+
+      <li><strong>Verify the patient's transfer set is clamped.</strong> Slide-clamp on the patient transfer set — closed. Visually confirm. <em>If the patient line is unclamped during the swap, dialysate or air can move uncontrolled.</em></li>
+
+      <li><strong>Prime the cycler per Baxter HomeChoice Pro IFU.</strong> Load the cassette, hang the dialysate bags, run the prime cycle. Verify priming completes without alarms. Verify the warmer is functioning and the cycler tubing is clear of air. <em>Never connect to the patient until prime is verified complete.</em></li>
+
+      <li><strong>Final luer check — three components, three caps.</strong> Cycler tubing end-cap, adapter both ends, patient transfer set end-cap. All present, none touched.</li>
+
+      <li><strong>Remove the cap from the cycler tubing.</strong> Pull straight off — don't twist a thread. Hold the connector by the body, not the luer. <em>Once exposed, the luer is sterile — do not let it touch any surface, including your gloved hand.</em></li>
+
+      <li><strong>Remove the corresponding cap from the adapter.</strong> Same technique. Connect the cycler tubing to the adapter using a smooth, deliberate motion — straight on, gentle twist to seat the luer-lock. Verify a snug seal; no wobble. <em>No re-do — if either luer touches anything, discard and start that component over.</em></li>
+
+      <li><strong>Remove the opposite cap from the adapter, and the cap from the patient transfer set.</strong> Connect the adapter to the patient transfer set. Same straight-on, no-twist-then-twist motion. Confirm full seating.</li>
+
+      <li><strong>Verify the entire chain.</strong> Cycler → adapter → patient transfer set. Trace the path with your eye. Look for kinks, twists, or strain. If anything looks off, stop and assess before opening a clamp.</li>
+
+      <li><strong>Open the patient's transfer-set clamp.</strong> Open in the correct direction per IFU. Confirm the cycler reads inflow / outflow pressures within range. <em>If alarms or pressure issues fire, stop the cycle, close the patient clamp, and troubleshoot before re-opening.</em></li>
+
+      <li><strong>Begin therapy.</strong> Confirm the HomeChoice Pro is running the prescribed program. Monitor the first cycle closely. Stay in the room for the first inflow.</li>
+
+      <li><strong>Document.</strong> Time of connection, lot numbers (cycler set, adapter, dialysate bags), nurse and patient identifiers, any alarms or interventions, dialysate clarity, exit-site appearance, and patient tolerance.</li>
+    </ol>
+
+    <div class="callout callout-danger">
+      <span class="callout-icon">⊘</span>
+      <div class="callout-body">
+        <span class="callout-label">"If in doubt, swap it out"</span>
+        Any luer that touches a glove, the field, the patient's skin, the cycler casing — <strong>anything that is not its mating connector</strong> — is contaminated. <strong>Discard that component, open a new one, and start that step over.</strong> A 90-second restart is cheaper than a peritonitis admission.
+      </div>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠</span>
+      <div class="callout-body">
+        <span class="callout-label">Disconnection follows the same discipline</span>
+        At the end of the run, disconnection is connection in reverse. <strong>Re-mask, re-hand-hygiene, re-glove, clamp first, cap immediately.</strong> A capped luer is a safe luer; an unwrapped one is not.
+      </div>
+    </div>
+  </section>
+
+  <!-- ── section: post-connection / monitoring ── -->
+  <section class="sec reveal delay-6">
+    <div class="sec-title">After the connection — what to watch</div>
+    <div class="sec-sub">Recognizing early peritonitis isn't optional</div>
+
+    <p style="font-size:14.5px;line-height:1.75;color:#d6e0ee">
+      Even with perfect technique, peritonitis can happen. The earliest sign is almost always <strong>cloudy effluent</strong> — a turbidity that wasn't there at the start of the cycle. Other early flags: <strong>abdominal pain</strong> (often described as a constant ache rather than colic), <strong>low-grade fever</strong>, nausea, or a sudden drop in ultrafiltration. <strong>Drain a sample, send for cell count + differential + Gram stain + culture, notify the physician.</strong> Empiric intraperitoneal antibiotics are typically started within hours of suspicion per ISPD guidelines — don't wait for cultures to return.
+    </p>
+    <p style="font-size:14.5px;line-height:1.75;color:#d6e0ee;margin-top:14px">
+      The exit site and tunnel also deserve a daily look: erythema, drainage, tenderness, scab change. <strong>Catch a tunnel infection before it becomes peritonitis.</strong>
+    </p>
+
+    <div class="callout callout-key">
+      <span class="callout-icon">🔑</span>
+      <div class="callout-body">
+        <span class="callout-label">The mindset</span>
+        Sterile technique isn't a skill you "learn." It's a discipline you <em>practice</em>, every single connection, on every single patient, forever. The day it becomes routine is the day you re-check yourself harder.
+      </div>
+    </div>
+
+    <p style="font-size:13px;color:var(--muted);line-height:1.65;margin-top:18px">
+      <em>References: Baxter HomeChoice Pro Operator's Manual (current edition) · ISPD Guidelines for Peritoneal Dialysis Catheter Practice and PD-Related Infections (current edition) · CDC Recommendations for Preventing Transmission of Infections Among Chronic Dialysis Patients · institutional PD nursing SOP. Verify against your local procedure before clinical use.</em>
+    </p>
+  </section>
+
+  <div class="foot">
+    <span>DART Tools · PD Adapter — Fresenius → Baxter</span>
+    <span>Educational support — not a substitute for institutional SOP or physician judgment</span>
+  </div>
+
+</div>
+
+<script>
+'use strict';
+const RM = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const DPR = Math.min(2, window.devicePixelRatio || 1);
+
+/* Nav scrolled state */
+const topnav = document.getElementById('topnav');
+const onScroll = () => topnav.classList.toggle('scrolled', window.scrollY > 8);
+window.addEventListener('scroll', onScroll, {passive:true}); onScroll();
+
+/* Reveal cascade */
+requestAnimationFrame(() => {
+  document.querySelectorAll('.reveal').forEach(el => el.classList.add('in'));
+});
+
+/* IntersectionObserver to re-reveal sections that scroll into view late */
+if ('IntersectionObserver' in window){
+  const io = new IntersectionObserver(entries => {
+    entries.forEach(en => {
+      if (en.isIntersecting){ en.target.classList.add('in'); io.unobserve(en.target); }
+    });
+  }, {threshold:.08});
+  document.querySelectorAll('.sec').forEach(el => io.observe(el));
+}
+
+/* Starfield */
+(function starfield(){
+  const cv = document.getElementById('stars');
+  if (!cv) return;
+  const cx = cv.getContext('2d');
+  let W, H, stars = [], rafId = null;
+  function size(){
+    W = cv.width = innerWidth * DPR;
+    H = cv.height = innerHeight * DPR;
+    cv.style.width = innerWidth + 'px';
+    cv.style.height = innerHeight + 'px';
+    const n = Math.min(140, Math.round(innerWidth * innerHeight / 11500));
+    stars = Array.from({length:n}, () => ({
+      x: Math.random()*W, y: Math.random()*H,
+      r: (Math.random()*1.1+0.35)*DPR,
+      tw: Math.random()*Math.PI*2,
+      ts: 0.004+Math.random()*0.012,
+      vx: -(0.02+Math.random()*0.05)*DPR,
+      hue: Math.random()
+    }));
+  }
+  function draw(){
+    cx.clearRect(0,0,W,H);
+    for (const s of stars){
+      s.tw += s.ts;
+      if (!RM){ s.x += s.vx; if (s.x < -4) s.x = W+4; }
+      const a = 0.25+0.55*(0.5+0.5*Math.sin(s.tw));
+      cx.globalAlpha = a;
+      cx.fillStyle = s.hue > 0.86 ? 'rgba(126,240,210,1)' : (s.hue > 0.72 ? 'rgba(153,201,255,1)' : 'rgba(235,242,252,1)');
+      cx.beginPath(); cx.arc(s.x, s.y, s.r, 0, Math.PI*2); cx.fill();
+    }
+    cx.globalAlpha = 1;
+    if (!RM) rafId = requestAnimationFrame(draw);
+  }
+  size(); draw();
+  window.addEventListener('resize', () => { size(); if (RM) draw(); });
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden){ cancelAnimationFrame(rafId); }
+    else if (!RM){ rafId = requestAnimationFrame(draw); }
+  });
+})();
+</script>
+</body>
+</html>
