@@ -258,6 +258,80 @@ select{
 .calc-line:last-child{border-bottom:none}
 .hidden{display:none!important}
 
+/* ── Breyanzi (coming soon) state ──────────────────── */
+.coming-soon-card{
+  position:relative;overflow:hidden;
+  border-radius:18px;padding:26px 24px 22px;
+  border:1.5px solid rgba(183,148,255,.36);
+  background:
+    radial-gradient(420px 220px at 18% -10%, rgba(183,148,255,.16), transparent 65%),
+    linear-gradient(180deg, rgba(183,148,255,.06), rgba(97,168,255,.04));
+  box-shadow:0 18px 48px rgba(0,0,0,.32), inset 0 1px 0 rgba(255,255,255,.05);
+  margin-top:14px;
+}
+.coming-soon-card::after{
+  content:"";position:absolute;inset:auto -40px -60px auto;width:260px;height:260px;
+  background:radial-gradient(circle, rgba(126,240,210,.14), transparent 65%);
+  pointer-events:none;border-radius:50%;
+}
+.cs-kicker{
+  font-size:10.5px;text-transform:uppercase;letter-spacing:.18em;
+  color:#d6c4ff;font-weight:900;margin-bottom:8px;
+  display:inline-flex;align-items:center;gap:8px;
+}
+.cs-kicker .dot{width:7px;height:7px;border-radius:50%;background:#b794ff;box-shadow:0 0 10px rgba(183,148,255,.7);animation:pulse 2.2s infinite}
+.cs-title{
+  font-size:clamp(20px,2.6vw,26px);font-weight:900;letter-spacing:-.02em;
+  color:#fff;line-height:1.18;margin-bottom:10px;
+}
+.cs-title .accent{
+  background:linear-gradient(120deg,#fff 0%,#d6c4ff 40%,#7ef0d2 75%,#fff 100%);
+  background-size:220% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;
+  animation:titleSheen 9s ease-in-out infinite;
+}
+.cs-sub{font-size:13.5px;line-height:1.65;color:#cdd6e2;margin-bottom:14px}
+.cs-input-stub{
+  display:flex;align-items:center;gap:10px;
+  padding:14px 16px;border-radius:12px;
+  border:1px dashed rgba(183,148,255,.30);
+  background:rgba(183,148,255,.05);
+  color:#b8a2ff;font-weight:800;font-size:13px;letter-spacing:.04em;
+  margin-bottom:10px;
+}
+.cs-input-stub .stub-icon{
+  width:30px;height:30px;border-radius:9px;
+  display:grid;place-items:center;font-size:14px;
+  background:linear-gradient(135deg, rgba(183,148,255,.20), rgba(97,168,255,.10));
+  border:1px solid rgba(183,148,255,.30);color:#d6c4ff;flex-shrink:0;
+}
+.cs-bullets{margin:6px 0 0;padding:0;list-style:none;font-size:13px;line-height:1.7;color:#d6e0ee}
+.cs-bullets li{padding:5px 0;display:flex;gap:9px;align-items:flex-start}
+.cs-bullets li::before{content:"▸";color:#b794ff;font-weight:900;flex-shrink:0;margin-top:1px}
+.cs-bullets strong{color:#fff}
+.cs-foot{
+  margin-top:14px;padding-top:12px;border-top:1px solid rgba(183,148,255,.18);
+  font-size:11.5px;color:var(--muted);line-height:1.55;
+}
+/* Results-pane "coming soon" mini-card */
+.cs-result-card{
+  border:1.5px solid rgba(183,148,255,.40);
+  background:
+    radial-gradient(260px 160px at 80% -10%, rgba(183,148,255,.12), transparent 60%),
+    linear-gradient(180deg, rgba(183,148,255,.06), rgba(255,255,255,.015));
+  border-radius:16px;padding:18px 18px 16px;
+}
+.cs-result-card .result-kicker{color:#d6c4ff}
+.cs-result-card .result-value{color:#fff;font-size:clamp(22px,3.4vw,30px)}
+.cs-result-card .result-meta{color:#cdd6e2}
+
+/* Visual stub for hidden form fields under Breyanzi mode */
+.field.hidden-by-breyanzi{display:none!important}
+body.breyanzi-mode #weightBasisPanel,
+body.breyanzi-mode #preCollectionWarning,
+body.breyanzi-mode #bloodPrimeWarning,
+body.breyanzi-mode .calc-row,
+body.breyanzi-mode #results{display:none!important}
+
 .banner{
   border-radius:14px;padding:12px 14px;
   font-size:13px;font-weight:700;line-height:1.5;
@@ -456,6 +530,12 @@ nav.scrolled{
   .hcomet,.twinkle{opacity:0!important}
 }
 
+
+/* Cross-platform <select> dropdown readability — Edge/Windows fix */
+html{color-scheme:dark}
+select{color-scheme:dark}
+option{background-color:#1a2030;color:#e9f0fa;font-weight:600}
+optgroup{background-color:#0f1722;color:#a5cdff;font-weight:800;font-style:normal}
 </style>
 </head>
 <body>
@@ -693,6 +773,31 @@ nav.scrolled{
 
       </div>
 
+      <!-- Breyanzi: Coming Soon panel (replaces calculator inputs when Breyanzi is selected) -->
+      <div class="coming-soon-card hidden" id="breyanziComingSoon" aria-live="polite">
+        <div class="cs-kicker"><span class="dot"></span>BMS Breyanzi · Lisocabtagene maraleucel</div>
+        <div class="cs-title"><span class="accent">Calculator — Coming Soon</span></div>
+        <div class="cs-sub">
+          Breyanzi collection differs from our standard CMNC workflow (volume-capped final product, in-process plasma addition, BMS-specific labeling chain). To prevent dose / volume confusion we're publishing the calculator only after the protocol pass has been signed off. <strong>Please use the general standard-HPC-A calculator with manual adjustments per BMS specs until then.</strong>
+        </div>
+
+        <div class="cs-input-stub"><div class="stub-icon">⏱</div><div>Numerical inputs — <em style="color:#cdd6e2;font-style:normal">paused for verification</em></div></div>
+
+        <ul class="cs-bullets">
+          <li><strong>Indication:</strong> Large B-cell lymphoma (LBCL), CLL/SLL, follicular lymphoma — CAR-T (CD19-directed, autologous).</li>
+          <li><strong>Collection type:</strong> CMNC on Spectra Optia. Product is judged by CD3 / T-cell yield, not by CD34.</li>
+          <li><strong>TBV processed:</strong> Approximately <strong>17 L processed</strong> total (Breyanzi-specific target — confirmed per BMS specs at time of collection).</li>
+          <li><strong>Bag-build at start:</strong> Add <strong>150 mL plasma</strong> to the collect bag before initiating MNC collection. Final product MNC + plasma must remain <strong>≤ 540 mL</strong>.</li>
+          <li><strong>Bag seal:</strong> <strong>5-inch seal · 2 seals, 3rd cut.</strong> Remove the 2 sample bulbs and clamps per BMS product image / job aid.</li>
+          <li><strong>Critical hazard:</strong> Final product <strong>volume cap is hard</strong> — exceeding it causes manufacturer rejection of the collection. Watch the running total throughout the run.</li>
+          <li><strong>Access &amp; documentation:</strong> Requires BMS Cell Therapy 360 (or current BMS portal) login for COI labeling and chain-of-custody. Verify the latest version of the apheresis collection job aid before the run.</li>
+        </ul>
+
+        <div class="cs-foot">
+          <strong>Why no live numbers yet?</strong> Breyanzi has a hard final-product volume cap, an in-process plasma addition step, and product-specific seal counts — math the standard CMNC engine here doesn't yet model. We'd rather show "Coming Soon" than show a number that could be wrong. Until the Breyanzi-specific module is published, use the general HPC-A pathway and confirm targets directly against the current BMS apheresis collection guide.
+        </div>
+      </div>
+
       <div class="hidden" id="preCollectionWarning" style="margin-top:14px"></div>
       <div class="hidden" id="bloodPrimeWarning" style="margin-top:10px"></div>
 
@@ -725,6 +830,12 @@ nav.scrolled{
           <div class="result-value">—</div>
           <div class="result-meta">Fill the form and press Calculate.</div>
         </div>
+      </div>
+      <!-- Breyanzi placeholder for the Results column -->
+      <div class="cs-result-card hidden" id="breyanziResultsHold">
+        <div class="result-kicker">● Breyanzi — Calculator Coming Soon</div>
+        <div class="result-value">—</div>
+        <div class="result-meta">Live calculations are paused for this product until the Breyanzi-specific module is published. Refer to the protocol summary on the left and the BMS apheresis collection guide for current numbers.</div>
       </div>
     </aside>
 
@@ -1192,10 +1303,36 @@ function renderDiagnosisInfo(){
   `;
 }
 
+/* ─── Breyanzi (Coming Soon) toggle ─── */
+function tagHideableFields(){
+  // Mark every .field in .form-grid EXCEPT the two we keep (diagnosis + company).
+  // Run once on init; cheap and idempotent.
+  const grid = document.querySelector('.form-grid');
+  if(!grid) return;
+  const fields = grid.querySelectorAll(':scope > .field');
+  fields.forEach(f => {
+    if (f.querySelector('#diagnosis') || f.querySelector('#company')) return;
+    f.classList.add('hideable-on-breyanzi');
+  });
+}
+function toggleBreyanziMode(on){
+  document.body.classList.toggle('breyanzi-mode', on);
+  document.querySelectorAll('.hideable-on-breyanzi').forEach(f => {
+    f.classList.toggle('hidden-by-breyanzi', on);
+  });
+  const cs = document.getElementById('breyanziComingSoon');
+  const csR = document.getElementById('breyanziResultsHold');
+  const calcBtn = document.getElementById('calculateBtn');
+  if (cs) cs.classList.toggle('hidden', !on);
+  if (csR) csR.classList.toggle('hidden', !on);
+  if (calcBtn) calcBtn.disabled = on;
+}
+
 /* ─── company / product preview ─── */
 function renderCompanyInfo(){
   const key = el.company.value;
   const c = companyLibrary[key];
+  toggleBreyanziMode(key === 'breyanzi');
   if(!c){ el.companyInfoCard.classList.add('hidden'); el.companyInfoCard.innerHTML=''; el.bluebirdTipsCard.classList.add('hidden'); el.bluebirdTipsCard.innerHTML=''; return; }
 
   const prefStyle = c.collectionPref.toLowerCase().includes('dark')
@@ -1501,6 +1638,8 @@ function createResultHTML(d){
 
 /* ─── calculate ─── */
 function calculate(){
+  // Short-circuit while Breyanzi is selected — the calculator UI is paused for that product.
+  if (document.body.classList.contains('breyanzi-mode')) return;
   try{
     const sex = el.sex.value;
     const hctRaw = parseFloat(el.hct.value);
@@ -1946,6 +2085,9 @@ if(el.weightBasisToggle){
   });
 }
 el.resetBtn.addEventListener('click', resetForm);
+
+/* Tag fields that get hidden under Breyanzi (Coming Soon) mode — once on init */
+tagHideableFields();
 
 /* Render the standard protocol info on initial load */
 renderCompanyInfo();
